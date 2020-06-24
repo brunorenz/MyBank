@@ -10,10 +10,14 @@
             alt="MyBank"
           />MyBank
         </b-navbar-brand>
-
-        <b-navbar-toggle target="navbar-toggle-collapse">
+        <!--
+  <span class="navbar-toggler-icon"></span>
+-->
+        <b-navbar-toggle
+          target="navbar-toggle-collapse"
+          class="d-none d-sm-block"
+        >
           <template v-slot:default="{ expanded }">
-            <span class="navbar-toggler-icon"></span>
             <b-icon v-if="expanded" icon="chevron-bar-up"></b-icon>
             <b-icon v-else icon="chevron-bar-down"></b-icon>
           </template>
