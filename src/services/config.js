@@ -2,13 +2,13 @@ import { CustomTooltips } from "@coreui/coreui-plugin-chartjs-custom-tooltips";
 
 const local = false;
 const remoteNodeServer = true;
-const serverUrlP = "/therm/rest/";
+const serverUrlP = "/mybank/rest/";
 const serverUrlR = "http://srvwas1.bpbari.it:8099/rest/";
 const serverUrlRemote = remoteNodeServer
-  ? "https://therm.65bruno.it/therm/rest/"
-  : "http://192.168.0.101:8101/therm/rest/";
+  ? "https://mybank.65bruno.it/mybank/rest/"
+  : "http://192.168.0.101:8102/mybank/rest/";
 const serverUrlD = local
-  ? "http://localhost:8101/therm/rest/"
+  ? "http://localhost:8102/mybank/rest/"
   : serverUrlRemote;
 
 const weatherUrl =
