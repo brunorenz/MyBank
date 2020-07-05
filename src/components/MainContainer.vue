@@ -25,9 +25,11 @@
           <div class="px-3 py-2">
             <nav class="mb-3">
               <b-nav vertical>
-                <b-nav-item active @click="checkLocalStorage">Active</b-nav-item>
-                <b-nav-item href="#link-1" @click="checkLocalStorage">Link</b-nav-item>
-                <b-nav-item href="#link-2" @click="checkLocalStorage">Another Link</b-nav-item>
+                <b-nav-item to="/login" @click="checkLocalStorage">Login</b-nav-item>
+                <b-nav-item-dropdown class="px-3" text="Gestione Messaggi">
+                  <b-dropdown-item to="/programmazione/termostato">PUSH</b-dropdown-item>
+                  <b-dropdown-item to="/programmazione/luce">SMS</b-dropdown-item>
+                </b-nav-item-dropdown>
               </b-nav>
             </nav>
           </div>
@@ -41,7 +43,7 @@
 
         <b-collapse id="navbar-toggle-collapse" is-nav>
           <b-navbar-nav class="d-md-down-none">
-            <b-nav-item class="px-3" to="/dashboard">Dashboard</b-nav-item>
+            <b-nav-item class="px-3" to="/login" @click="checkLocalStorage">Login</b-nav-item>
             <b-nav-item class="px-3" href="#">Link 1</b-nav-item>
             <b-nav-item class="px-3" href="#">Link 2</b-nav-item>
             <b-nav-item class="px-3" href="#" disabled>Configurazione</b-nav-item>
@@ -86,7 +88,7 @@ export default {
   beforeMount: function() {
     //this.checkLocalStorage();
   },
-  data : function() {
+  data: function() {
     return {};
   },
   methods: {

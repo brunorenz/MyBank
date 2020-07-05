@@ -1,4 +1,4 @@
-import { CustomTooltips } from "@coreui/coreui-plugin-chartjs-custom-tooltips";
+//import { CustomTooltips } from "@coreui/coreui-plugin-chartjs-custom-tooltips";
 
 const local = false;
 const remoteNodeServer = true;

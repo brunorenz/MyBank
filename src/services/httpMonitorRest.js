@@ -6,7 +6,7 @@ import {
   SecurityConfiguration,
 } from "@/services/config";
 
-import router from "@/router/index";
+import router from "@/router";
 
 const GET_CONFIGURATION = "getConfiguration";
 const UPDATE_CONFIGURATION = "updateConfiguration";
