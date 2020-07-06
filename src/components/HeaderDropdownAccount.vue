@@ -4,13 +4,13 @@
       <template slot="button-content">
         <img
           v-if="logoff"
-          src="img/user-off-2.png"
+          src="img/icons/user-off-2.png"
           class="img-avatar"
           alt="NotLogged"
         />
         <img
           v-if="!logoff"
-          src="img/user-on-2.png"
+          src="img/icons/user-on-2.png"
           class="img-avatar"
           alt="Logged"
         />
@@ -41,6 +41,7 @@ export default {
     this.$root.$on("ThermLogon", (text) => {
       this.checkLogonStatus();
     });
+    this.checkLogonStatus();
   },
   methods: {
     checkLogonStatus() {

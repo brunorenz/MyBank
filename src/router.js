@@ -6,6 +6,7 @@ Vue.use(Router);
 // Containers
 const MainContainer = () => import("@/components/MainContainer");
 const Login = () => import("@/components/Login");
+const GestioneMessagi = () => import("@/components/GestioneMessagi");
 
 // Views
 const About = () => import("@/views/About.vue");
@@ -29,15 +30,22 @@ export default new Router({
           meta: {
             guest: true,
           },
-
         },
         {
           path: "login",
           name: "Login",
           component: Login,
           meta: {
-            guest: true
-          }
+            guest: true,
+          },
+        },
+        {
+          path: "gestioneMessaggi",
+          name: "GestioneMessagi",
+          component: GestioneMessagi,
+          meta: {
+            guest: false,
+          },
         },
       ],
     },

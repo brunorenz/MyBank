@@ -8,7 +8,7 @@ import {
 
 import router from "@/router";
 
-const GET_CONFIGURATION = "getConfiguration";
+const GET_MESSAGEFILTER = "getMessageFilter";
 const UPDATE_CONFIGURATION = "updateConfiguration";
 const UPDATE_STATUS = "updateStatus";
 
@@ -115,9 +115,12 @@ export default class HttpMonitor {
     return axios.get(url, {});
   }
 
-  getConfiguration() {
+  getMessageFilter(type) {
     var queryParams = [];
-    return axios.get(this.getUrl(GET_CONFIGURATION, queryParams), {
+    if (type) {
+      queryParams.push({ key: "type", value: type });
+    }
+    return axios.get(this.getUrl(GET_MESSAGEFILTER, queryParams), {
       headers: this.getSecurityHeader(),
     });
   }

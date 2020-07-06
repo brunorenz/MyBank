@@ -97,6 +97,7 @@ export default {
     SidebarToggler,
     SidebarHeader,
     SidebarNav,
+    SidebarMinimizer,
     HeaderDropdownAccount,
   },
   computed: {
@@ -119,32 +120,28 @@ export default {
     return {
       nav: [
         {
-          name: "Dashboard",
-          url: "/dashboard",
-          icon: "fa fa-dashboard ",
+          name: "Login",
+          url: "/login",
+          icon: "fa fa-sign-in",
           badge: {
             variant: "primary",
           },
         },
         {
-          name: "Gestione Dispositivi",
-          url: "/gestione",
-          icon: "fa fa-cogs",
-        },
-        {
-          name: "Programmazione",
-          url: "/programmazione",
-          icon: "fa fa-calendar",
+          name: "Gestione Messaggi",
+          url: "/gestioneMessaggi",
+          icon: "fa fa-envelope-open",
           children: [
             {
-              name: "Termostato",
-              url: "/programmazione/termostato",
+              name: "PUSH",
+              url: "/gestioneMessaggi?type=PUSH",
               icon: "fa fa-thermometer-1",
+              attributes: { disabled: false },
             },
             {
-              name: "Controllo Luce",
-              url: "/programmazione/luce",
-              icon: "fa fa-lightbulb-o",
+              name: "SMS",
+              url: "/gestioneMessaggi?type=SMS",
+              icon: "icon-star",
             },
           ],
         },
