@@ -26,10 +26,18 @@
     </b-table>
     <p>
       <b-row class="text-center">
-        <b-button class="mx-2" @click="clearSelected" disabled="false"
+        <!--
+        <b-button
+          class="mx-2"
+          @click="clearSelected"
+          :disabled="selected.length === 0"
           >Cancella selezione</b-button
         >
-        <b-button class="mx-2" @click="deleteMessage" disabled="false"
+        -->
+        <b-button
+          class="mx-2"
+          @click="deleteMessage"
+          :disabled="selected.length === 0"
           >Elimina messaggio</b-button
         >
         <b-button class="mx-2" variant="normal" @click="addMessage"
@@ -53,7 +61,7 @@ export default {
     return {
       fields: ["SENDER"],
       items: [],
-      selectMode: "multi",
+      selectMode: "single",
       selected: [],
     };
   },
@@ -61,6 +69,9 @@ export default {
     this.getMessageFilter();
   },
   methods: {
+    isAnySelected() {
+      return this.selected.length() === 0;
+    },
     clearSelected() {
       this.$refs.selectableTable.clearSelected();
     },
