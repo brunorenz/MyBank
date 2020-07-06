@@ -159,56 +159,6 @@ export default class HttpMonitor {
     });
   }
 
-  manageProgramming(inputData) {
-    let url = "";
-    let usePost = true;
-    switch (inputData.action) {
-      case TypeAction.READ:
-        return getProgramming(inputData.type);
-        break;
-      case TypeAction.ADD:
-        url = this.getUrl(ADD_PROGRAMMING);
-        break;
-      case TypeAction.UPDATE:
-        url = this.getUrl(UPDATE_PROGRAMMING);
-        break;
-      case TypeAction.DELETE:
-        url = this.getUrl(DELETE_PROGRAMMING);
-        break;
-    }
-
-    if (usePost)
-      return axios.post(url, "data=" + JSON.stringify(inputData), {
-        headers: this.getPostSecurityHeader(),
-      });
-    else
-      return axios.get(url, {
-        headers: this.getSecurityHeader(),
-      });
-  }
-  /*
-  removeProgramming(inputData) {
-    return axios.post(
-      this.getUrl(REMOVE_PROGRAMMING),
-      "data=" + JSON.stringify(inputData),
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
-        }
-      }
-    );
-  }
-  */
-  addProgramming(type) {
-    return axios.post(
-      this.getUrl(ADD_PROGRAMMING),
-      "data=" + JSON.stringify({ type: type }),
-      {
-        headers: getPostSecurityHeader(),
-      }
-    );
-  }
-
   updateConfiguration(inputData) {
     let url = this.getUrl(UPDATE_CONFIGURATION);
     return axios.post(url, "data=" + JSON.stringify(inputData), {

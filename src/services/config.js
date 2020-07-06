@@ -79,12 +79,12 @@ export function getInitialHTTPGraphConfiguration() {
   }
   return dati;
 }
-
+// custom: CustomTooltips,
 export function getDefaultLineOptions() {
   var options = {
     tooltips: {
       enabled: false,
-      custom: CustomTooltips,
+
       intersect: true,
       mode: "index",
       position: "nearest",
@@ -139,11 +139,12 @@ export function getDefaultLineOptions() {
   return options;
 }
 //https://code.tutsplus.com/it/tutorials/getting-started-with-chartjs-line-and-bar-charts--cms-28384
+//
 export function getDefaultBarOptions() {
   var options = {
     tooltips: {
       enabled: false,
-      custom: CustomTooltips,
+
       intersect: true,
       mode: "index",
       position: "nearest",
