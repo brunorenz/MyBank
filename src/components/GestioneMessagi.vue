@@ -7,6 +7,7 @@
       :select-mode="selectMode"
       :items="items"
       :fields="fields"
+      selected-variant="primary"
       @row-selected="onRowSelected"
       responsive="sm"
       head-variant="light"
@@ -75,7 +76,16 @@ export default {
     clearSelected() {
       this.$refs.selectableTable.clearSelected();
     },
-    deleteMessage() {},
+    deleteMessage() {
+      // chiedi conferma
+      const httpService = new HttpMonitor();
+      let record = this.selected[0];
+      httpService.deleteMessageFilter(record).then((response) => {
+        this.getMessageFilter();
+      }).catch((error) => {
+          console.log("Error callig service 'deleteMessageFilter' : " + error);
+        });
+    },
     onRowSelected(items) {
       this.selected = items;
     },

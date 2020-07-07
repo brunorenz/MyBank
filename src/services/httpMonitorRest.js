@@ -9,6 +9,8 @@ import {
 import router from "@/router";
 
 const GET_MESSAGEFILTER = "getMessageFilter";
+const DELETE_MESSAGEFILTER = "deleteMessageFilter";
+//
 const UPDATE_CONFIGURATION = "updateConfiguration";
 const UPDATE_STATUS = "updateStatus";
 
@@ -96,7 +98,11 @@ export default class HttpMonitor {
     console.log("Call " + outUrl);
     return outUrl;
   }
-
+/**
+ * Login 
+ * @param {*} email 
+ * @param {*} password 
+ */
   login(email, password) {
     let inputData = {
       email: email,
@@ -115,6 +121,11 @@ export default class HttpMonitor {
     return axios.get(url, {});
   }
 
+  /**
+   * Get message filter by type
+   * 
+   * @param {*} type 
+   */
   getMessageFilter(type) {
     var queryParams = [];
     if (type) {
@@ -124,6 +135,18 @@ export default class HttpMonitor {
       headers: this.getSecurityHeader(),
     });
   }
+
+/**
+ * 
+ * @param {*} inputData 
+ */
+  deleteMessageFilter(inputData) {
+    let url = this.getUrl(DELETE_MESSAGEFILTER);
+    return axios.post(url, "data=" + JSON.stringify(inputData), {
+      headers: this.getPostSecurityHeader(),
+    });
+  }
+
 
   getStatistics(sType, type, interval) {
     var queryParams = [
