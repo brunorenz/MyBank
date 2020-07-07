@@ -61,6 +61,14 @@ export default class HttpMonitor {
     this.configuration = getConfiguration();
   }
 
+  getPostJsonSecurityHeader(auth) {
+    let headers = {
+      "Content-Type": "application/json; charset=utf-8",
+    };
+    if (typeof auth === "undefined") auth = true;
+    return this.getSecurityHeader(headers, auth);
+  }
+
   getPostSecurityHeader(auth) {
     let headers = {
       "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
@@ -98,11 +106,11 @@ export default class HttpMonitor {
     console.log("Call " + outUrl);
     return outUrl;
   }
-/**
- * Login 
- * @param {*} email 
- * @param {*} password 
- */
+  /**
+   * Login
+   * @param {*} email
+   * @param {*} password
+   */
   login(email, password) {
     let inputData = {
       email: email,
@@ -123,8 +131,8 @@ export default class HttpMonitor {
 
   /**
    * Get message filter by type
-   * 
-   * @param {*} type 
+   *
+   * @param {*} type
    */
   getMessageFilter(type) {
     var queryParams = [];
@@ -136,17 +144,16 @@ export default class HttpMonitor {
     });
   }
 
-/**
- * 
- * @param {*} inputData 
- */
+  /**
+   *
+   * @param {*} inputData
+   */
   deleteMessageFilter(inputData) {
     let url = this.getUrl(DELETE_MESSAGEFILTER);
-    return axios.post(url, "data=" + JSON.stringify(inputData), {
-      headers: this.getPostSecurityHeader(),
+    return axios.post(url, JSON.stringify(inputData), {
+      headers: this.getPostJsonSecurityHeader(),
     });
   }
-
 
   getStatistics(sType, type, interval) {
     var queryParams = [

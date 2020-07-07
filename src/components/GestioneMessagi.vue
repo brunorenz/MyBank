@@ -14,13 +14,13 @@
       striped
     >
       <!-- Example scoped slot for select state illustrative purposes -->
-      <template v-slot:cell(selected)="{ rowSelected }">
+      <template v-slot:cell(selezionato)="{ rowSelected }">
         <template v-if="rowSelected">
-          <span aria-hidden="true"><i class="fa fa-wrench"/></span>
+          <span aria-hidden="true"><i class="fa fa-check-square-o"/></span>
           <span class="sr-only">Selected</span>
         </template>
         <template v-else>
-          <span aria-hidden="true">&nbsp;</span>
+          <span aria-hidden="true"><i class="fa fa-square-o"/></span>
           <span class="sr-only">Not selected</span>
         </template>
       </template>
@@ -64,15 +64,21 @@ export default {
       items: [],
       selectMode: "single",
       selected: [],
+      type: "",
     };
   },
   mounted: function() {
+    this.type = this.$route.query.type;
     this.getMessageFilter();
   },
+  beforeUpdate: function() {
+    console.log("BEFORE UPDATED");
+    if (this.type != this.$route.query.type) {
+      this.type = this.$route.query.type;
+      this.getMessageFilter();
+    }
+  },
   methods: {
-    isAnySelected() {
-      return this.selected.length() === 0;
-    },
     clearSelected() {
       this.$refs.selectableTable.clearSelected();
     },
@@ -80,9 +86,12 @@ export default {
       // chiedi conferma
       const httpService = new HttpMonitor();
       let record = this.selected[0];
-      httpService.deleteMessageFilter(record).then((response) => {
-        this.getMessageFilter();
-      }).catch((error) => {
+      httpService
+        .deleteMessageFilter(record)
+        .then((response) => {
+          this.getMessageFilter();
+        })
+        .catch((error) => {
           console.log("Error callig service 'deleteMessageFilter' : " + error);
         });
     },
@@ -92,11 +101,11 @@ export default {
     addMessage() {},
     getMessageFilter() {
       const httpService = new HttpMonitor();
-      let type = this.$route.query.type;
-      let label = type === "SMS" ? "sender" : "package_name";
+      //let type = this.$route.query.type;
+      let label = this.type === "SMS" ? "sender" : "package_name";
       this.fields = ["selezionato", label];
       httpService
-        .getMessageFilter(type)
+        .getMessageFilter(this.type)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -105,7 +114,7 @@ export default {
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               datiServers.push(
-                type === "SMS"
+                this.type === "SMS"
                   ? { sender: dati[i].sender, _id: dati[i]._id }
                   : { package_name: dati[i].packageName, _id: dati[i]._id }
               );
