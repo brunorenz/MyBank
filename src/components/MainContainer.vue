@@ -128,20 +128,20 @@ export default {
           },
         },
         {
-          name: "Gestione Messaggi",
-          url: "/gestioneMessaggi",
-          icon: "fa fa-envelope-open",
+          name: "Gestione Filtri",
+          url: "/gestioneFiltri",
+          icon: "fa fa-filter",
           children: [
             {
               name: "PUSH",
-              url: "/gestioneMessaggi?type=PUSH",
-              icon: "fa fa-thermometer-1",
+              url: "/gestioneFiltri?type=PUSH",
+              icon: "fa fa-envelope-open",
               attributes: { disabled: false },
             },
             {
               name: "SMS",
-              url: "/gestioneMessaggi?type=SMS",
-              icon: "icon-star",
+              url: "/gestioneFiltri?type=SMS",
+              icon: "fa fa-envelope-open",
             },
           ],
         },

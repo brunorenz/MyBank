@@ -11,6 +11,7 @@ import router from "@/router";
 const GET_MESSAGEFILTER = "getMessageFilter";
 const DELETE_MESSAGEFILTER = "deleteMessageFilter";
 const GET_NOTIFICATIONMESSAGE = "getDistinctRegisteredMessage";
+const ADD_MESSAGEFILTER = "addMessageFilter";
 //
 const UPDATE_CONFIGURATION = "updateConfiguration";
 const UPDATE_STATUS = "updateStatus";
@@ -160,6 +161,13 @@ export default class HttpMonitor {
    */
   deleteMessageFilter(inputData) {
     let url = this.getUrl(DELETE_MESSAGEFILTER);
+    return axios.post(url, JSON.stringify(inputData), {
+      headers: this.getPostJsonSecurityHeader(),
+    });
+  }
+
+  addMessafeFilter(inputData) {
+    let url = this.getUrl(ADD_MESSAGEFILTER);
     return axios.post(url, JSON.stringify(inputData), {
       headers: this.getPostJsonSecurityHeader(),
     });

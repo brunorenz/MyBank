@@ -6,7 +6,7 @@ Vue.use(Router);
 // Containers
 const MainContainer = () => import("@/components/MainContainer");
 const Login = () => import("@/components/Login");
-const GestioneMessagi = () => import("@/components/GestioneMessagi");
+const GestioneFiltri = () => import("@/components/GestioneFiltri");
 
 // Views
 const About = () => import("@/views/About.vue");
@@ -40,9 +40,9 @@ export default new Router({
           },
         },
         {
-          path: "gestioneMessaggi",
-          name: "GestioneMessagi",
-          component: GestioneMessagi,
+          path: "gestioneFiltri",
+          name: "GestioneFiltri",
+          component: GestioneFiltri,
           meta: {
             guest: false,
           },
