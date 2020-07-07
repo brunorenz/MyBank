@@ -10,6 +10,7 @@ import router from "@/router";
 
 const GET_MESSAGEFILTER = "getMessageFilter";
 const DELETE_MESSAGEFILTER = "deleteMessageFilter";
+const GET_NOTIFICATIONMESSAGE = "getDistinctRegisteredMessage";
 //
 const UPDATE_CONFIGURATION = "updateConfiguration";
 const UPDATE_STATUS = "updateStatus";
@@ -144,6 +145,15 @@ export default class HttpMonitor {
     });
   }
 
+  getNotificationMessage(type) {
+    var queryParams = [];
+    if (type) {
+      queryParams.push({ key: "type", value: type });
+    }
+    return axios.get(this.getUrl(GET_NOTIFICATIONMESSAGE, queryParams), {
+      headers: this.getSecurityHeader(),
+    });
+  }
   /**
    *
    * @param {*} inputData
