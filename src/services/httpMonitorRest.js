@@ -166,7 +166,7 @@ export default class HttpMonitor {
     });
   }
 
-  addMessafeFilter(inputData) {
+  addMessageFilter(inputData) {
     let url = this.getUrl(ADD_MESSAGEFILTER);
     return axios.post(url, JSON.stringify(inputData), {
       headers: this.getPostJsonSecurityHeader(),

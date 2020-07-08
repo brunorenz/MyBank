@@ -58,10 +58,11 @@
           striped
           small
           bordered
-          caption-top
+          sticky-header
         >
-          <!-- Example scoped slot for select state illustrative purposes -->
+          <!-- Example scoped slot for select state illustrative purposes 
           <template v-slot:table-caption>Messaggi ricevuti</template>
+          -->
           <template v-slot:cell(selezionatoAA)="{ rowSelected }">
             <template v-if="rowSelected">
               <span aria-hidden="true"><i class="fa fa-check-square-o"/></span>
@@ -124,6 +125,9 @@ export default {
     clearSelected() {
       this.$refs.selectableTable.clearSelected();
     },
+    clearSelectedAll() {
+      this.$refs.selectableTableAll.clearSelected();
+    },
     deleteMessageMsgBox() {
       this.showConfirmationMessage(
         "Confermi la cancellazione ?",
@@ -133,10 +137,8 @@ export default {
     addMessageMsgBox() {
       this.showConfirmationMessage("Confermi l'inserimento ?", this.addMessage);
     },
-
     addMessage() {
-      //let record = this.selectedAll[0];
-      let entry = {};
+      let entry = { type: this.type };
       if (this.type === "SMS") entry.sender = this.selectedAll[0].key;
       else entry.packageName = this.selectedAll[0].key;
       console.log("add record " + entry);
