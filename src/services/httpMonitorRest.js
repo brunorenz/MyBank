@@ -12,6 +12,7 @@ const GET_MESSAGEFILTER = "getMessageFilter";
 const DELETE_MESSAGEFILTER = "deleteMessageFilter";
 const GET_NOTIFICATIONMESSAGE = "getDistinctRegisteredMessage";
 const ADD_MESSAGEFILTER = "addMessageFilter";
+const LIST_MESSAGES = "listMessages";
 //
 const UPDATE_CONFIGURATION = "updateConfiguration";
 const UPDATE_STATUS = "updateStatus";
@@ -30,18 +31,18 @@ const local = false;
 
 // Add a response interceptor
 axios.interceptors.response.use(
-  function(response) {
+  function (response) {
     if (typeof response.data.error != "undefined") {
       console.log(
         "Return code : " +
-          response.data.error.code +
-          " , Message : " +
-          response.data.error.message
+        response.data.error.code +
+        " , Message : " +
+        response.data.error.message
       );
     }
     return response;
   },
-  function(error) {
+  function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
     let a = error;
@@ -146,6 +147,14 @@ export default class HttpMonitor {
     });
   }
 
+  listMessages(type, key) {
+    var queryParams = [{ key: "type", value: type }];
+    queryParams.push({ key: type === "SMS" ? "sender" : "packageName", value: key });
+
+    return axios.get(this.getUrl(LIST_MESSAGES, queryParams), {
+      headers: this.getSecurityHeader(),
+    });
+  }
   getNotificationMessage(type) {
     var queryParams = [];
     if (type) {

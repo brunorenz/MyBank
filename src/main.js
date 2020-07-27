@@ -7,6 +7,7 @@ import "./registerServiceWorker";
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
+Vue.use(require('vue-moment'));
 //Vue.use(CoreuiVue);
 Vue.config.productionTip = false;
 
