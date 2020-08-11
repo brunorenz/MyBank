@@ -146,6 +146,24 @@ export default {
           ],
         },
         {
+          name: "Gestione Messaggi",
+          url: "/gestioneMessaggi",
+          icon: "fa fa-filter",
+          children: [
+            {
+              name: "PUSH",
+              url: "/gestioneMessaggi?type=PUSH",
+              icon: "fa fa-envelope-open",
+              attributes: { disabled: false },
+            },
+            {
+              name: "SMS",
+              url: "/gestioneMessaggi?type=SMS",
+              icon: "fa fa-envelope-open",
+            },
+          ],
+        },
+        {
           name: "Statistiche",
           url: "/statistiche",
           icon: "fa fa-bar-chart",
