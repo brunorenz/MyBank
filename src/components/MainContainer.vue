@@ -1,9 +1,6 @@
 <template>
   <div class="app">
     <AppHeader fixed>
-      <!--<SidebarToggler class="d-lg-none" display="md" />-->
-
-      <!--<SidebarToggler class="d-md-down-none" display="lg" :defaultOpen="true" />-->
       <b-link class="navbar-brand">
         <img
           class="navbar-brand-full"
@@ -20,7 +17,13 @@
           alt="MyBank"
         />
       </b-link>
-      <SidebarToggler />
+      <SidebarToggler class="d-lg-none" display="md" mobile />
+      <SidebarToggler
+        class="d-md-down-none"
+        display="lg"
+        :defaultOpen="false"
+      />
+      <!-- <SidebarToggler mobile /> -->
       <b-navbar-nav class="d-md-down-none" v-if="logonStatus">
         <b-nav-item class="px-3" to="/dashboard">Dashboard</b-nav-item>
         <b-nav-item-dropdown class="px-3" text="Gestione Filtri">
