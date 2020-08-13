@@ -10,7 +10,7 @@ const GestioneFiltri = () => import("@/components/GestioneFiltri");
 const GestioneMessaggi = () => import("@/components/GestioneMessaggi");
 
 // Views
-const About = () => import("@/views/About.vue");
+//const About = () => import("@/views/About.vue");
 
 export default new Router({
   //mode: 'history',
@@ -21,17 +21,17 @@ export default new Router({
       name: "Home",
       component: MainContainer,
       children: [
-        {
-          path: "about",
-          name: "About",
-          // route level code-splitting
-          // this generates a separate chunk (about.[hash].js) for this route
-          // which is lazy-loaded when the route is visited.
-          component: About,
-          meta: {
-            guest: true,
-          },
-        },
+        // {
+        //   path: "about",
+        //   name: "About",
+        //   // route level code-splitting
+        //   // this generates a separate chunk (about.[hash].js) for this route
+        //   // which is lazy-loaded when the route is visited.
+        //   component: About,
+        //   meta: {
+        //     guest: true,
+        //   },
+        // },
         {
           path: "login",
           name: "Login",
