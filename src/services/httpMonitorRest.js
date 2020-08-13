@@ -4,6 +4,8 @@ import {
   getConfiguration,
   TypeProgramming,
   SecurityConfiguration,
+  doLogoff,
+  getXrfToken,
 } from "@/services/config";
 
 import router from "@/router";
@@ -31,18 +33,18 @@ const local = false;
 
 // Add a response interceptor
 axios.interceptors.response.use(
-  function (response) {
+  function(response) {
     if (typeof response.data.error != "undefined") {
       console.log(
         "Return code : " +
-        response.data.error.code +
-        " , Message : " +
-        response.data.error.message
+          response.data.error.code +
+          " , Message : " +
+          response.data.error.message
       );
     }
     return response;
   },
-  function (error) {
+  function(error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
     let a = error;
@@ -51,8 +53,9 @@ axios.interceptors.response.use(
       typeof error.response.status != "undefined" &&
       error.response.status === 403
     ) {
-      window.sessionStorage.removeItem("jwttoken");
-      window.sessionStorage.removeItem("jwt");
+      doLogoff();
+      // window.sessionStorage.removeItem("jwttoken");
+      // window.sessionStorage.removeItem("jwt");
       router.push("/login");
     }
     return Promise.reject(error);
@@ -86,7 +89,8 @@ export default class HttpMonitor {
     }
     if (typeof auth === "undefined") auth = false;
     if (SecurityConfiguration.jwtRequired && auth) {
-      let token = window.sessionStorage.getItem("jwttoken");
+      //let token = window.sessionStorage.getItem("jwttoken");
+      let token = getXrfToken();
       if (token == null) {
         //let a = router;
         router.push("/login");
@@ -149,7 +153,10 @@ export default class HttpMonitor {
 
   listMessages(type, key) {
     var queryParams = [{ key: "type", value: type }];
-    queryParams.push({ key: type === "SMS" ? "sender" : "packageName", value: key });
+    queryParams.push({
+      key: type === "SMS" ? "sender" : "packageName",
+      value: key,
+    });
 
     return axios.get(this.getUrl(LIST_MESSAGES, queryParams), {
       headers: this.getSecurityHeader(),

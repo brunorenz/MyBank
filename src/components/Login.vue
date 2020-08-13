@@ -63,7 +63,7 @@ export default {
   data() {
     return {
       email: "",
-      password: ""
+      password: "",
     };
   },
   methods: {
@@ -73,8 +73,8 @@ export default {
           //          title: "Please Confirm",
           //          okVariant: "danger"
         })
-        .then(value => {})
-        .catch(err => {
+        .then((value) => {})
+        .catch((err) => {
           // An error occurred
         });
     },
@@ -86,11 +86,12 @@ export default {
       try {
         httpService
           .login(this.email, this.password)
-          .then(response => {
+          .then((response) => {
             let dati = response.data;
             if (dati.error.code === 0) {
               window.sessionStorage.setItem("jwt", JSON.stringify(dati.data));
               window.sessionStorage.setItem("jwttoken", dati.data.token);
+              this.$root.$emit("MyBankLogon", "logon");
               let r = router.history.current;
               let redirect = "/";
               if (typeof r.query.redirect != "undefined")
@@ -105,7 +106,7 @@ export default {
               );
             }
           })
-          .catch(error => {
+          .catch((error) => {
             //            console.log("Error callig service 'getConfiguration' : " + error);
             this.showMsgConfermaEsecuzione(
               "Servizio non disponibile : " + error
@@ -114,7 +115,7 @@ export default {
       } catch (error) {
         this.showMsgConfermaEsecuzione("Servizio non disponibile : " + error);
       }
-    }
-  }
+    },
+  },
 };
 </script>

@@ -1,5 +1,6 @@
 <template>
-  <b-navbar-nav class="d-md-down-none">
+  <!--<b-navbar-nav class="d-md-down-none"> -->
+  <b-navbar-nav>
     <b-nav-item-dropdown split no-caret>
       <template slot="button-content">
         <img
@@ -29,31 +30,32 @@
 </template>
 
 <script>
+import { isUserLogged, doLogoff } from "@/services/config";
+
 export default {
   name: "HeaderDropdownAccount",
   data: () => {
-    return { itemsCount: 42, logoff: false };
+    return { logoff: false };
   },
   mounted: function() {
     this.$root.$on("bv::dropdown::show", (bvEvent) => {
       this.checkLogonStatus();
     });
-    this.$root.$on("ThermLogon", (text) => {
+    this.$root.$on("MyBankLogon", (text) => {
       this.checkLogonStatus();
     });
     this.checkLogonStatus();
   },
   methods: {
     checkLogonStatus() {
-      let logoff = window.sessionStorage.getItem("jwt") == null;
+      let logoff = !isUserLogged();
       console.log("Logon status : " + logoff);
       this.logoff = logoff;
     },
     doLogoff() {
       console.log("Do logoff!");
-      window.sessionStorage.removeItem("jwttoken");
-      window.sessionStorage.removeItem("jwt");
-      this.checkLogonStatus();
+      doLogoff();
+      this.$root.$emit("MyBankLogon", "logon");
     },
   },
 };

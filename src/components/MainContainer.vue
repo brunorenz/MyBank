@@ -1,8 +1,10 @@
 <template>
   <div class="app">
     <AppHeader fixed>
-      <SidebarToggler class="d-lg-none" display="md" mobile />
-      <b-link class="navbar-brand" to="#">
+      <!--<SidebarToggler class="d-lg-none" display="md" />-->
+
+      <!--<SidebarToggler class="d-md-down-none" display="lg" :defaultOpen="true" />-->
+      <b-link class="navbar-brand">
         <img
           class="navbar-brand-full"
           src="img/icons/iconfinder_walletmoneyshoppingatmcard_128.png"
@@ -18,22 +20,21 @@
           alt="MyBank"
         />
       </b-link>
-      <SidebarToggler
-        class="d-md-down-none"
-        display="lg"
-        :defaultOpen="false"
-      />
-      <b-navbar-nav class="d-md-down-none">
+      <SidebarToggler />
+      <b-navbar-nav class="d-md-down-none" v-if="logonStatus">
         <b-nav-item class="px-3" to="/dashboard">Dashboard</b-nav-item>
-        <b-nav-item class="px-3" to="/gestione">Gestione</b-nav-item>
-        <b-nav-item class="px-3" to="/statistiche">Statistiche</b-nav-item>
-        <b-nav-item-dropdown class="px-3" text="Programmazione">
-          <b-dropdown-item to="/programmazione/termostato"
-            >Termostato</b-dropdown-item
+        <b-nav-item-dropdown class="px-3" text="Gestione Filtri">
+          <b-dropdown-item to="/gestioneFiltri?type=PUSH">PUSH</b-dropdown-item>
+          <b-dropdown-item to="/gestioneFiltri?type=SMS">SMS</b-dropdown-item>
+        </b-nav-item-dropdown>
+        <b-nav-item-dropdown class="px-3" text="Gestione Messaggi">
+          <b-dropdown-item to="/gestioneMessaggi?type=PUSH"
+            >PUSH</b-dropdown-item
           >
-          <b-dropdown-item to="/programmazione/luce">Luce</b-dropdown-item>
+          <b-dropdown-item to="/gestioneMessaggi?type=SMS">SMS</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
+
       <b-navbar-nav class="ml-auto">
         <HeaderDropdownAccount />
       </b-navbar-nav>
@@ -85,6 +86,7 @@ import {
   Breadcrumb,
 } from "@coreui/vue";
 import HeaderDropdownAccount from "./HeaderDropdownAccount";
+import { isUserLogged } from "@/services/config";
 export default {
   name: "MainContainer",
   components: {
@@ -114,15 +116,33 @@ export default {
     },
   },
   beforeMount: function() {
-    //this.checkLocalStorage();
+    this.getNavBar();
+    this.refreshMenu();
   },
   data: function() {
     return {
-      nav: [
+      nav: {},
+      logonStatus: false,
+    };
+  },
+  methods: {
+    checkLocalStorage() {
+      if (window.localStorage) console.log("Local Storage Supported");
+      else console.log("Local Storage Not Supported");
+    },
+    refreshMenu() {
+      this.$root.$on("MyBankLogon", (text) => {
+        console.log("Event refreshMenu !!");
+        this.getNavBar();
+      });
+    },
+    getNavBar() {
+      let isLogged = isUserLogged();
+      let navLogon = [
         {
-          name: "Login",
-          url: "/login",
-          icon: "fa fa-sign-in",
+          name: "Logout",
+          url: "/logout",
+          icon: "fa fa-sign-out",
           badge: {
             variant: "primary",
           },
@@ -131,35 +151,36 @@ export default {
           name: "Gestione Filtri",
           url: "/gestioneFiltri",
           icon: "fa fa-filter",
+
           children: [
             {
               name: "PUSH",
               url: "/gestioneFiltri?type=PUSH",
               icon: "fa fa-envelope-open",
-              attributes: { disabled: false },
+              attributes: { disabled: !isLogged },
             },
             {
               name: "SMS",
               url: "/gestioneFiltri?type=SMS",
               icon: "fa fa-envelope-open",
+              attributes: { disabled: !isLogged },
             },
           ],
         },
         {
           name: "Gestione Messaggi",
           url: "/gestioneMessaggi",
-          icon: "fa fa-filter",
+          icon: "fa fa-envelope-open",
           children: [
             {
               name: "PUSH",
               url: "/gestioneMessaggi?type=PUSH",
-              icon: "fa fa-envelope-open",
-              attributes: { disabled: false },
+              attributes: { disabled: !isLogged },
             },
             {
               name: "SMS",
               url: "/gestioneMessaggi?type=SMS",
-              icon: "fa fa-envelope-open",
+              attributes: { disabled: !isLogged },
             },
           ],
         },
@@ -168,14 +189,31 @@ export default {
           url: "/statistiche",
           icon: "fa fa-bar-chart",
         },
-      ],
-    };
-  },
-  methods: {
-    checkLocalStorage() {
-      if (window.localStorage) console.log("Local Storage Supported");
-      else console.log("Local Storage Not Supported");
+      ];
+      let navLogoff = [
+        {
+          name: "Login",
+          url: "/login",
+          icon: "fa fa-sign-in",
+          badge: {
+            variant: "primary",
+          },
+        },
+      ];
+      this.nav = isLogged ? navLogon : navLogoff;
+      this.logonStatus = isLogged;
     },
   },
 };
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

@@ -209,3 +209,16 @@ export var SecurityConfiguration = {
   basicAuthRequired: true,
   jwtRequired: true,
 };
+
+export function isUserLogged() {
+  return window.sessionStorage.getItem("jwt") != null;
+}
+
+export function doLogoff() {
+  window.sessionStorage.removeItem("jwttoken");
+  window.sessionStorage.removeItem("jwt");
+}
+
+export function getXrfToken() {
+  return window.sessionStorage.getItem("jwttoken");
+}

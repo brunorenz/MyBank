@@ -6,6 +6,7 @@ Vue.use(Router);
 // Containers
 const MainContainer = () => import("@/components/MainContainer");
 const Login = () => import("@/components/Login");
+const Logout = () => import("@/components/Logout");
 const GestioneFiltri = () => import("@/components/GestioneFiltri");
 const GestioneMessaggi = () => import("@/components/GestioneMessaggi");
 
@@ -38,6 +39,14 @@ export default new Router({
           component: Login,
           meta: {
             guest: true,
+          },
+        },
+        {
+          path: "logout",
+          name: "Logout",
+          component: Logout,
+          meta: {
+            guest: false,
           },
         },
         {
