@@ -15,6 +15,7 @@ const DELETE_MESSAGEFILTER = "deleteMessageFilter";
 const GET_NOTIFICATIONMESSAGE = "getDistinctRegisteredMessage";
 const ADD_MESSAGEFILTER = "addMessageFilter";
 const LIST_MESSAGES = "listMessages";
+const ANALIZE_MESSAGES = "analizeMessages";
 //
 const UPDATE_CONFIGURATION = "updateConfiguration";
 const UPDATE_STATUS = "updateStatus";
@@ -148,6 +149,13 @@ export default class HttpMonitor {
     }
     return axios.get(this.getUrl(GET_MESSAGEFILTER, queryParams), {
       headers: this.getSecurityHeader(),
+    });
+  }
+
+  analizeMessages(msgIds) {
+    let url = this.getUrl(ANALIZE_MESSAGES);
+    return axios.post(url, JSON.stringify(msgIds), {
+      headers: this.getPostJsonSecurityHeader(),
     });
   }
 

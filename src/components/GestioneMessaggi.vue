@@ -18,25 +18,6 @@
         bordered
         sticky-header
       >
-        <!-- Example scoped slot for select state illustrative purposes 
-          <template v-slot:table-caption>Messaggi ricevuti</template>
-          -->
-        <!--
-        <template v-slot:cell(selezionatoAA)="{ rowSelected }">
-          <template v-if="rowSelected">
-            <span aria-hidden="true">
-              <i class="fa fa-check-square-o" />
-            </span>
-            <span class="sr-only">Selected</span>
-          </template>
-          <template v-else>
-            <span aria-hidden="true">
-              <i class="fa fa-square-o" />
-            </span>
-            <span class="sr-only">Not selected</span>
-          </template>
-        </template>
-        -->
       </b-table>
       <!--
       <b-row class="justify-content-md-center">
@@ -64,8 +45,35 @@
           small
           bordered
           sticky-header
+          selectable
+          select-mode="multi"
+          selected-variant="primary"
+          @row-selected="onRowSelectedMessage"
         >
         </b-table>
+        <b-row class="justify-content-md-left">
+          <b-button
+            class="mx-2"
+            variant="primary"
+            :disabled="itemsSampleMessages.length === 0"
+            @click="selectAllMessages"
+            >Seleziona Tutti</b-button
+          >
+          <b-button
+            class="mx-2"
+            variant="primary"
+            @click="deselectAllMessages"
+            :disabled="selectedMessage.length === 0"
+            >Annulla Selezione</b-button
+          >
+          <b-button
+            class="mx-2"
+            variant="primary"
+            @click="processMessages"
+            :disabled="selectedMessage.length === 0"
+            >Analizza</b-button
+          >
+        </b-row>
       </b-card>
     </b-collapse>
   </div>
@@ -78,7 +86,7 @@ export default {
   name: "GestioneMessaggi",
   data: function() {
     return {
-      selected: [],
+      selectedMessage: [],
       type: "",
       fieldsAll: [],
       itemsAll: [],
@@ -148,8 +156,8 @@ export default {
       this.clearSelectedAll();
       this.getNotificationMessage();
     },
-    onRowSelected(items) {
-      this.selected = items;
+    onRowSelectedMessage(items) {
+      this.selectedMessage = items;
     },
     onRowSelectedAll(items) {
       this.selectedAll = items;
@@ -158,6 +166,12 @@ export default {
         this.visibleMessage = true;
         this.listMessages();
       }
+    },
+    selectAllMessages() {
+      this.$refs.sampleMessages.selectAllRows();
+    },
+    deselectAllMessages() {
+      this.$refs.sampleMessages.clearSelected();
     },
     showConfirmationMessage(message, operation) {
       this.$bvModal
@@ -168,6 +182,48 @@ export default {
         .catch((err) => {
           // An error occurred
           console.error("Errore in msgbox conferma operazione : " + err);
+        });
+    },
+    processMessages() {
+      this.showConfirmationMessage(
+        "Confermi l'analisi dei messaggi selezionati ?",
+        this.processSelectedMessages
+      );
+    },
+    processSelectedMessages() {
+      let msgIds = [];
+      for (let ix = 0; ix < this.selectedMessage.length; ix++) {
+        msgIds.push(this.selectedMessage[ix]["_id"]);
+      }
+      //console.log("process selected message " + JSON.stringify({ msgIds }));
+      const httpService = new HttpMonitor();
+      httpService
+        .analizeMessages({ msgIds: msgIds })
+        .then((response) => {
+          var data = response.data;
+          let esito = data.error;
+          if (esito.code === 0) {
+            let msgs = data.data;
+            let accepted = 0;
+            let notAccepted = 0;
+            let notFound = 0;
+            for (let ix = 0; ix < msgs.length; ix++) {
+              accepted += msgs[ix].accepted ? 1 : 0;
+              notFound += msgs[ix].found ? 0 : 1;
+              notAccepted += msgs[ix].accepted ? 0 : 1;
+            }
+            console.log(
+              "Not found : " +
+                notFound +
+                " - Accepted " +
+                accepted +
+                " - Not accepted " +
+                notAccepted
+            );
+          }
+        })
+        .catch((error) => {
+          console.log("Error callig service 'getMessageFilter' : " + error);
         });
     },
     getNotificationMessage() {
@@ -227,6 +283,7 @@ export default {
                 date: this.$moment(new Date(dati[i].time)).format(
                   "DD/MM/YY HH:MM"
                 ),
+                _id: dati[i]._id,
               };
               if (this.type === "PUSH") entry.sender = dati[i].sender;
               entry.message = dati[i].message;
