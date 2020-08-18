@@ -1,6 +1,14 @@
 <template>
   <div class="app">
     <b-card>
+      <b-form-group label="Tipo messaggio" class="ml-3">
+        <b-form-radio-group
+          id="msgAccepted"
+          v-model="messageType"
+          :options="messageTypeOptions"
+          @input="changeType"
+        ></b-form-radio-group>
+      </b-form-group>
       <h3>Filtri messaggi {{ this.$route.query.type }}</h3>
       <b-table
         ref="selectableTable"
@@ -38,11 +46,8 @@
           variant="primary"
           @click="deleteMessageMsgBox"
           :disabled="selected.length === 0"
-          >Elimina filtro</b-button
-        >
-        <b-button class="mx-2" variant="primary" v-b-toggle.collapse-1-inner
-          >Aggiungi filtro</b-button
-        >
+        >Elimina filtro</b-button>
+        <b-button class="mx-2" variant="primary" v-b-toggle.collapse-1-inner>Aggiungi filtro</b-button>
       </b-row>
     </b-card>
     <b-collapse id="collapse-1-inner" class="mt-2">
@@ -88,15 +93,13 @@
             variant="primary"
             v-b-toggle.collapse-2-inner
             :disabled="selectedAll.length === 0"
-            >Mostra messaggi</b-button
-          >
+          >Mostra messaggi</b-button>
           <b-button
             class="mx-2"
             variant="primary"
             @click="addMessageMsgBox"
             :disabled="selectedAll.length === 0"
-            >Aggiungi</b-button
-          >
+          >Aggiungi</b-button>
         </b-row>
       </b-card>
     </b-collapse>
@@ -160,7 +163,7 @@ import HttpMonitor from "@/services/httpMonitorRest";
 
 export default {
   name: "GestioneMessaggi",
-  data: function() {
+  data: function () {
     return {
       fields: [],
       items: [],
@@ -172,14 +175,19 @@ export default {
       itemsSampleMessages: [],
       fieldsSampleMessages: [],
       visibleMessage: false,
+      messageType: "SMS",
+      messageTypeOptions: [
+        { text: "SMS", value: "SMS" },
+        { text: "PUSH", value: "PUSH" },
+      ],
     };
   },
-  mounted: function() {
+  mounted: function () {
     this.type = this.$route.query.type;
     this.getMessageFilter();
     this.getNotificationMessage();
   },
-  beforeUpdate: function() {
+  beforeUpdate: function () {
     console.log("BEFORE UPDATED");
     if (this.type != this.$route.query.type) {
       this.type = this.$route.query.type;
@@ -188,6 +196,10 @@ export default {
     }
   },
   methods: {
+    changeType() {
+      console.log("Change Type!! " + this.messageType);
+      this.reloadAndClear();
+    },
     getRow(row) {
       console.log("ROW = " + row);
       return row;

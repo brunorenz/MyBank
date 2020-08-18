@@ -11,13 +11,13 @@
       </b-form-group>
       <h3>Messaggi {{ this.messageType }} ricevuti</h3>
       <b-table
-        ref="selectableTableAll"
+        ref="receivedMessage"
         selectable
         select-mode="single"
-        :items="itemsAll"
-        :fields="fieldsAll"
+        :items="receivedMessageItems"
+        :fields="receivedMessageFields"
         selected-variant="primary"
-        @row-selected="onRowSelectedAll"
+        @row-selected="onReceivedMessageRowSelected"
         responsive="sm"
         sort-icon-left
         head-variant="light"
@@ -84,8 +84,8 @@ export default {
   data: function() {
     return {
       selectedMessage: [],
-      fieldsAll: [],
-      itemsAll: [],
+      receivedMessageFields: [],
+      receivedMessageItems: [],
       selectedAll: [],
       itemsSampleMessages: [],
       fieldsSampleMessages: [],
@@ -117,7 +117,7 @@ export default {
       return row;
     },
     clearSelectedAll() {
-      this.$refs.selectableTableAll.clearSelected();
+      this.$refs.receivedMessage.clearSelected();
     },
     deleteMessageMsgBox() {
       this.showConfirmationMessage(
@@ -163,7 +163,7 @@ export default {
     onRowSelectedMessage(items) {
       this.selectedMessage = items;
     },
-    onRowSelectedAll(items) {
+    onReceivedMessageRowSelected(items) {
       this.selectedAll = items;
       if (items.length === 0) this.visibleMessage = false;
       else {
@@ -234,7 +234,7 @@ export default {
       const httpService = new HttpMonitor();
       //let type = this.$route.query.type;
       let label = this.messageType === "SMS" ? "Origine" : "Nome pacchetto";
-      this.fieldsAll = [{ key: "key", label: label, sortable: true }];
+      this.receivedMessageFields = [{ key: "key", label: label, sortable: true }];
       httpService
         .getNotificationMessage(this.messageType)
         .then((response) => {
@@ -246,7 +246,7 @@ export default {
             for (var i = 0; i < dati.length; i++) {
               datiServers.push({ key: dati[i] });
             }
-            this.itemsAll = datiServers;
+            this.receivedMessageItems = datiServers;
           } else
             console.log(
               "Error callig service 'getMessageFilter' : " + esito.message
