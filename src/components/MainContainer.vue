@@ -151,8 +151,8 @@ export default {
           },
         },
         {
-          name: "Configurazione Messaggi",
-          icon: "fa fa-envelope-open",
+          name: "Configurazione",
+          icon: "fa fa-gears",
           children: [
             {
               name: "Filtri",
@@ -173,25 +173,23 @@ export default {
             {
               name: "Messaggi",
               icon: "fa fa-envelope-open",
-              children: [
-                {
-                  name: "PUSH",
-                  url: "/gestioneMessaggi?type=PUSH",
-                  attributes: { disabled: !isLogged },
-                },
-                {
-                  name: "SMS",
-                  url: "/gestioneMessaggi?type=SMS",
-                  attributes: { disabled: !isLogged },
-                },
-              ],
+              url: "/gestioneMessaggi",
+              attributes: { disabled: !isLogged },
+            },
+            {
+              name: "Regole",
+              url: "/rules",
+              icon: "fa fa-handshake-o",
+              badge: {
+                variant: "primary",
+              },
             },
           ],
         },
         {
           name: "Gestione Movimenti",
           url: "/gestioneMovimenti",
-          icon: "fa fa-envelope-open",
+          icon: "fa fa-credit-card",
           attributes: { disabled: !isLogged },
         },
         {

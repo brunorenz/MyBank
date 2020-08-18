@@ -1,7 +1,15 @@
 <template>
   <div class="app">
     <b-card>
-      <h3>Messaggi {{ this.$route.query.type }} ricevuti</h3>
+      <b-form-group label="Tipo messaggio" class="ml-3">
+        <b-form-radio-group
+          id="msgAccepted"
+          v-model="messageType"
+          :options="messageTypeOptions"
+          @input="changeType"
+        ></b-form-radio-group>
+      </b-form-group>
+      <h3>Messaggi {{ this.messageType }} ricevuti</h3>
       <b-table
         ref="selectableTableAll"
         selectable
@@ -19,21 +27,10 @@
         sticky-header
       >
       </b-table>
-      <!--
-      <b-row class="justify-content-md-center">
-        <b-button
-          class="mx-2"
-          variant="primary"
-          v-b-toggle.collapse-2-inner
-          :disabled="selectedAll.length === 0"
-          >Mostra messaggi</b-button
-        >
-      </b-row>
-      -->
     </b-card>
     <b-collapse id="collapse-2-inner" v-model="visibleMessage" class="mt-2">
       <b-card>
-        <h3>Dettaglio Messaggi {{ this.$route.query.type }} ricevuti</h3>
+        <h3>Dettaglio Messaggi {{ this.messageType }} ricevuti</h3>
         <b-table
           ref="sampleMessages"
           :items="itemsSampleMessages"
@@ -87,27 +84,34 @@ export default {
   data: function() {
     return {
       selectedMessage: [],
-      type: "",
       fieldsAll: [],
       itemsAll: [],
       selectedAll: [],
       itemsSampleMessages: [],
       fieldsSampleMessages: [],
       visibleMessage: false,
+      messageType: "SMS",
+      messageTypeOptions: [
+        { text: "SMS", value: "SMS" },
+        { text: "PUSH", value: "PUSH" },
+      ],
     };
   },
   mounted: function() {
-    this.type = this.$route.query.type;
     this.getNotificationMessage();
   },
   beforeUpdate: function() {
-    console.log("BEFORE UPDATED");
-    if (this.type != this.$route.query.type) {
-      this.type = this.$route.query.type;
-      this.getNotificationMessage();
-    }
+    // console.log("BEFORE UPDATED");
+    // if (this.type != this.$route.query.type) {
+    //   this.type = this.$route.query.type;
+    //   this.getNotificationMessage();
+    // }
   },
   methods: {
+    changeType() {
+      console.log("Change Type!! " + this.messageType);
+      this.reloadAndClear();
+    },
     getRow(row) {
       console.log("ROW = " + row);
       return row;
@@ -125,8 +129,8 @@ export default {
       this.showConfirmationMessage("Confermi l'inserimento ?", this.addMessage);
     },
     addMessage() {
-      let entry = { type: this.type };
-      if (this.type === "SMS") entry.sender = this.selectedAll[0].key;
+      let entry = { type: this.messageType };
+      if (this.messageType === "SMS") entry.sender = this.selectedAll[0].key;
       else entry.packageName = this.selectedAll[0].key;
       console.log("add record " + entry);
       const httpService = new HttpMonitor();
@@ -229,10 +233,10 @@ export default {
     getNotificationMessage() {
       const httpService = new HttpMonitor();
       //let type = this.$route.query.type;
-      let label = this.type === "SMS" ? "Origine" : "Nome pacchetto";
+      let label = this.messageType === "SMS" ? "Origine" : "Nome pacchetto";
       this.fieldsAll = [{ key: "key", label: label, sortable: true }];
       httpService
-        .getNotificationMessage(this.type)
+        .getNotificationMessage(this.messageType)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -259,7 +263,7 @@ export default {
       this.fieldsSampleMessages = [
         { key: "date", label: "Data", sortable: true },
       ];
-      if (this.type === "PUSH")
+      if (this.messageType === "PUSH")
         this.fieldsSampleMessages.push({
           key: "sender",
           label: "Origine",
@@ -271,7 +275,7 @@ export default {
         sortable: true,
       });
       httpService
-        .listMessages(this.type, this.selectedAll[0].key)
+        .listMessages(this.messageType, this.selectedAll[0].key)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -285,7 +289,7 @@ export default {
                 ),
                 _id: dati[i]._id,
               };
-              if (this.type === "PUSH") entry.sender = dati[i].sender;
+              if (this.messageType === "PUSH") entry.sender = dati[i].sender;
               entry.message = dati[i].message;
               datiServers.push(entry);
             }
