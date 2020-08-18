@@ -9,6 +9,7 @@ const Login = () => import("@/components/Login");
 const Logout = () => import("@/components/Logout");
 const GestioneFiltri = () => import("@/components/GestioneFiltri");
 const GestioneMessaggi = () => import("@/components/GestioneMessaggi");
+const GestioneMovimenti = () => import("@/components/GestioneMovimenti");
 
 // Views
 //const About = () => import("@/views/About.vue");
@@ -61,6 +62,14 @@ export default new Router({
           path: "gestioneMessaggi",
           name: "GestioneMessaggi",
           component: GestioneMessaggi,
+          meta: {
+            guest: false,
+          },
+        },
+        {
+          path: "GestioneMovimenti",
+          name: "GestioneMovimenti",
+          component: GestioneMovimenti,
           meta: {
             guest: false,
           },

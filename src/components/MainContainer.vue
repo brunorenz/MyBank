@@ -151,41 +151,48 @@ export default {
           },
         },
         {
-          name: "Gestione Filtri",
-          url: "/gestioneFiltri",
-          icon: "fa fa-filter",
-
+          name: "Configurazione Messaggi",
+          icon: "fa fa-envelope-open",
           children: [
             {
-              name: "PUSH",
-              url: "/gestioneFiltri?type=PUSH",
-              icon: "fa fa-envelope-open",
-              attributes: { disabled: !isLogged },
+              name: "Filtri",
+              icon: "fa fa-filter",
+              children: [
+                {
+                  name: "PUSH",
+                  url: "/gestioneFiltri?type=PUSH",
+                  attributes: { disabled: !isLogged },
+                },
+                {
+                  name: "SMS",
+                  url: "/gestioneFiltri?type=SMS",
+                  attributes: { disabled: !isLogged },
+                },
+              ],
             },
             {
-              name: "SMS",
-              url: "/gestioneFiltri?type=SMS",
+              name: "Messaggi",
               icon: "fa fa-envelope-open",
-              attributes: { disabled: !isLogged },
+              children: [
+                {
+                  name: "PUSH",
+                  url: "/gestioneMessaggi?type=PUSH",
+                  attributes: { disabled: !isLogged },
+                },
+                {
+                  name: "SMS",
+                  url: "/gestioneMessaggi?type=SMS",
+                  attributes: { disabled: !isLogged },
+                },
+              ],
             },
           ],
         },
         {
-          name: "Gestione Messaggi",
-          url: "/gestioneMessaggi",
+          name: "Gestione Movimenti",
+          url: "/gestioneMovimenti",
           icon: "fa fa-envelope-open",
-          children: [
-            {
-              name: "PUSH",
-              url: "/gestioneMessaggi?type=PUSH",
-              attributes: { disabled: !isLogged },
-            },
-            {
-              name: "SMS",
-              url: "/gestioneMessaggi?type=SMS",
-              attributes: { disabled: !isLogged },
-            },
-          ],
+          attributes: { disabled: !isLogged },
         },
         {
           name: "Statistiche",

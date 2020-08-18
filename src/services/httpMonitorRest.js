@@ -16,6 +16,7 @@ const GET_NOTIFICATIONMESSAGE = "getDistinctRegisteredMessage";
 const ADD_MESSAGEFILTER = "addMessageFilter";
 const LIST_MESSAGES = "listMessages";
 const ANALIZE_MESSAGES = "analizeMessages";
+const LIST_MOVEMENTS = "listAccountMovements";
 //
 const UPDATE_CONFIGURATION = "updateConfiguration";
 const UPDATE_STATUS = "updateStatus";
@@ -155,6 +156,13 @@ export default class HttpMonitor {
   analizeMessages(msgIds) {
     let url = this.getUrl(ANALIZE_MESSAGES);
     return axios.post(url, JSON.stringify(msgIds), {
+      headers: this.getPostJsonSecurityHeader(),
+    });
+  }
+
+  listAccountMovements(filter) {
+    let url = this.getUrl(LIST_MOVEMENTS);
+    return axios.post(url, JSON.stringify(filter), {
       headers: this.getPostJsonSecurityHeader(),
     });
   }
