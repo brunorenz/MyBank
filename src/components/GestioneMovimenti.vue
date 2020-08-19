@@ -1,26 +1,31 @@
 <template>
   <div class="app">
-    <b-card title="Filtro Ricerca">
+    <b-card header="Filtro Ricerca">
       <b-row>
-        <b-form-group label="Solo movimenti validi" class="ml-3">
+        <b-form-group label="Solo movimenti validi" class="col-sm-3">
           <b-form-checkbox
             id="msgAccepted"
             v-model="msgAccepted"
           ></b-form-checkbox>
         </b-form-group>
-        <b-form-group label="Intervallo date" id="fieldDateRange" class="ml-5">
-          <date-picker v-model="dateRange" type="month" range></date-picker>
+        <b-form-group
+          label="Intervallo date"
+          id="fieldDateRange"
+          class="col-sm-3"
+        >
+          <div>
+            <date-picker v-model="dateRange" type="month" range></date-picker>
+          </div>
         </b-form-group>
       </b-row>
       <b-button
-        class="mx-2"
         variant="primary"
         @click="searchMovements"
         :disabled="dateRange === null"
         >Aggiorna</b-button
       >
     </b-card>
-    <b-card title="Movimenti Registrati">
+    <b-card header="Movimenti Registrati">
       <b-table
         ref="accountMovements"
         selectable
@@ -30,27 +35,38 @@
         selected-variant="primary"
         @row-selected="onRowSelected"
         @row-contextmenu="rightClicked"
-        responsive="sm"
+        responsive="md"
         sort-icon-left
-        head-variant="light"
         striped
         small
         bordered
-        sticky-header
+        head-variant="light"
+        sticky-header="400px"
         :sort-compare="sortCompareDate"
+        :busy="isAccountMovementsBusy"
       >
+        <template v-slot:table-busy>
+          <div class="text-center text-danger my-2">
+            <b-spinner class="align-middle"></b-spinner>
+            <strong>Loading...</strong>
+          </div>
+        </template>
+        <template v-slot:cell(importo)="data">
+          <div class="text-right">{{ data.value }}</div>
+        </template>
+        <template v-slot:cell(date)="data">
+          <div class="text-center">{{ data.value }}</div>
+        </template>
       </b-table>
-      <!--
-      <b-row class="justify-content-md-center">
+      <b-card-text v-if="itemsAll.length > 0">
+        <h5>Importo Totale dei movimenti selezionati {{ this.totale }}</h5>
         <b-button
-          class="mx-2"
           variant="primary"
-          v-b-toggle.collapse-2-inner
-          :disabled="selectedAll.length === 0"
-          >Mostra messaggi</b-button
+          @click="searchMovements"
+          :disabled="selectedMessage.length === 0"
+          >Dettaglio</b-button
         >
-      </b-row>
-      -->
+      </b-card-text>
     </b-card>
   </div>
 </template>
@@ -60,6 +76,11 @@ import HttpMonitor from "@/services/httpMonitorRest";
 import DatePicker from "vue2-datepicker";
 import "vue2-datepicker/index.css";
 import "vue2-datepicker/locale/it";
+import {
+  showMsgEsitoEsecuzione,
+  showMsgErroreEsecuzione,
+  showConfirmationMessage,
+} from "@/services/utilities";
 
 export default {
   name: "GestioneMovimenti",
@@ -72,6 +93,8 @@ export default {
       visibleMessage: false,
       dateRange: null,
       msgAccepted: true,
+      totale: 0,
+      isAccountMovementsBusy: false,
     };
   },
   mounted: function() {
@@ -80,9 +103,6 @@ export default {
     now1.setDate(1);
     now1.setDate(1);
     this.dateRange = [now1, now2];
-  },
-  beforeUpdate: function() {
-    console.log("BEFORE UPDATED");
   },
   methods: {
     checkRange() {
@@ -101,16 +121,6 @@ export default {
     deselectAllMessages() {
       this.$refs.accountMovements.clearSelected();
     },
-    showConfirmationMessage(message, operation) {
-      this.$bvModal
-        .msgBoxConfirm(message)
-        .then((value) => {
-          if (value) operation();
-        })
-        .catch((err) => {
-          console.error("Errore in msgbox conferma operazione : " + err);
-        });
-    },
     sortCompareDate(aRow, bRow, key) {
       //console.log("Sort Compare for key " + key + " DESC " + sortDesc);
       if (key === "date") {
@@ -124,7 +134,15 @@ export default {
       // Log the event
       console.log("right clicked row " + index, evt.type);
     },
+    formatImporto(value) {
+      var formatter = new Intl.NumberFormat("it-IT", {
+        style: "currency",
+        currency: "EUR",
+      });
+      return formatter.format(value);
+    },
     searchMovements() {
+      this.isAccountMovementsBusy = true;
       const httpService = new HttpMonitor();
       let input = {
         dateTo: this.$moment(this.dateRange[1]).format("DD/MM/YYYY"),
@@ -136,10 +154,20 @@ export default {
           key: "date",
           label: "Data",
           sortable: true,
+          stickyColumn: true,
+          variant: "primary",
+        },
+        {
+          key: "bankId",
+          label: "Banca",
+          sortable: true,
         },
         {
           key: "importo",
           label: "Importo",
+          formatter: (value) => {
+            return this.formatImporto(value);
+          },
         },
         {
           key: "esercente",
@@ -152,6 +180,7 @@ export default {
           sortable: true,
         }
       );
+      let totale = 0;
       httpService
         .listAccountMovements(input)
         .then((response) => {
@@ -160,6 +189,7 @@ export default {
           if (esito.code === 0) {
             let dati = data.data;
             var datiServers = [];
+
             for (var i = 0; i < dati.length; i++) {
               let d = dati[i];
               let dType = "Pos";
@@ -175,18 +205,20 @@ export default {
                 _id: d._id,
                 msgId: d.msgId,
                 messageTime: d.messageTime,
+                bankId: d.bankId,
               };
-
+              if (typeof d.importo === "number") totale += d.importo;
               datiServers.push(entry);
             }
             this.itemsAll = datiServers;
-          } else
-            console.log(
-              "Error callig service 'listMessages' : " + esito.message
-            );
+          } else showMsgErroreEsecuzione(this, esito, "listAccountMovements");
+          this.isAccountMovementsBusy = false;
+          this.totale = this.formatImporto(totale);
         })
         .catch((error) => {
-          console.log("Error callig service 'listMessages' : " + error);
+          showMsgErroreEsecuzione(this, error, "listAccountMovements");
+          this.isAccountMovementsBusy = true;
+          this.totale = this.formatImporto(totale);
         });
     },
   },

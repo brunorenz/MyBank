@@ -1,22 +1,23 @@
 <template>
   <div class="app">
-    <b-card :header="filterHeaderLabel">
-      <b-form-group label="Seleziona tipo messaggio" class="col-sm-3">
+    <b-card>
+      <b-form-group label="Tipo messaggio" class="ml-3">
         <b-form-radio-group
-          id="messageTypeId"
+          id="msgAccepted"
           v-model="messageType"
           :options="messageTypeOptions"
           @input="changeType"
         ></b-form-radio-group>
       </b-form-group>
+      <h3>Filtri messaggi {{ this.$route.query.type }}</h3>
       <b-table
-        ref="filterTable"
+        ref="selectableTable"
         selectable
         select-mode="single"
-        :items="filterItems"
-        :fields="filterFields"
+        :items="items"
+        :fields="fields"
         selected-variant="primary"
-        @row-selected="onFilterRowSelected"
+        @row-selected="onRowSelected"
         responsive="sm"
         sort-icon-left
         head-variant="light"
@@ -44,7 +45,7 @@
           class="mx-2"
           variant="primary"
           @click="deleteMessageMsgBox"
-          :disabled="filterSelected.length === 0"
+          :disabled="selected.length === 0"
           >Elimina filtro</b-button
         >
         <b-button class="mx-2" variant="primary" v-b-toggle.collapse-1-inner
@@ -52,16 +53,17 @@
         >
       </b-row>
     </b-card>
-    <b-collapse id="collapse-1-inner">
-      <b-card :header="notFilteredMessageHeaderLabel">
+    <b-collapse id="collapse-1-inner" class="mt-2">
+      <b-card>
+        <h3>Messaggi {{ this.$route.query.type }} ricevuti</h3>
         <b-table
-          ref="notFilteredMessageTable"
+          ref="selectableTableAll"
           selectable
           select-mode="single"
           :items="itemsAll"
           :fields="fieldsAll"
           selected-variant="primary"
-          @row-selected="onNotFilteredMessagRowSelected"
+          @row-selected="onRowSelectedAll"
           responsive="sm"
           sort-icon-left
           head-variant="light"
@@ -107,7 +109,8 @@
       </b-card>
     </b-collapse>
     <b-collapse id="collapse-2-inner" v-model="visibleMessage" class="mt-2">
-      <b-card :header="sampleMessagesHeaderLabel">
+      <b-card>
+        <h3>Dettaglio Messaggi {{ this.$route.query.type }} ricevuti</h3>
         <b-table
           ref="sampleMessages"
           :items="itemsSampleMessages"
@@ -120,7 +123,41 @@
           bordered
           sticky-header
         >
+          <!-- Example scoped slot for select state illustrative purposes 
+          <template v-slot:table-caption>Messaggi ricevuti</template>
+          
+          <template v-slot:cell(selezionatoAA)="{ rowSelected }">
+            <template v-if="rowSelected">
+              <span aria-hidden="true">
+                <i class="fa fa-check-square-o" />
+              </span>
+              <span class="sr-only">Selected</span>
+            </template>
+            <template v-else>
+              <span aria-hidden="true">
+                <i class="fa fa-square-o" />
+              </span>
+              <span class="sr-only">Not selected</span>
+            </template>
+          </template>
+          -->
         </b-table>
+        <!--
+        <b-row class="justify-content-md-center">
+          <b-button
+            class="mx-2"
+            variant="primary"
+            v-b-toggle.collapse-2-inner
+            :disabled="selectedAll.length === 0"
+          >Mostra messaggi</b-button>
+          <b-button
+            class="mx-2"
+            variant="primary"
+            @click="addMessageMsgBox"
+            :disabled="selectedAll.length === 0"
+          >Aggiungi</b-button>
+        </b-row>
+        -->
       </b-card>
     </b-collapse>
   </div>
@@ -138,18 +175,15 @@ export default {
   name: "GestioneMessaggi",
   data: function() {
     return {
-      filterFields: [],
-      filterItems: [],
-      filterSelected: [],
-      filterHeaderLabel: "",
+      fields: [],
+      items: [],
+      selected: [],
       type: "",
       fieldsAll: [],
       itemsAll: [],
       selectedAll: [],
-      notFilteredMessageHeaderLabel: "",
       itemsSampleMessages: [],
       fieldsSampleMessages: [],
-      sampleMessageHeaderLabel: "",
       visibleMessage: false,
       messageType: "SMS",
       messageTypeOptions: [
@@ -159,11 +193,21 @@ export default {
     };
   },
   mounted: function() {
+    this.type = this.$route.query.type;
     this.getMessageFilter();
     this.getNotificationMessage();
   },
+  beforeUpdate: function() {
+    console.log("BEFORE UPDATED");
+    if (this.type != this.$route.query.type) {
+      this.type = this.$route.query.type;
+      this.getMessageFilter();
+      this.getNotificationMessage();
+    }
+  },
   methods: {
     changeType() {
+      console.log("Change Type!! " + this.messageType);
       this.reloadAndClear();
     },
     getRow(row) {
@@ -171,10 +215,10 @@ export default {
       return row;
     },
     clearSelected() {
-      this.$refs.filterTable.clearSelected();
+      this.$refs.selectableTable.clearSelected();
     },
     clearSelectedAll() {
-      this.$refs.notFilteredMessageTable.clearSelected();
+      this.$refs.selectableTableAll.clearSelected();
     },
     deleteMessageMsgBox() {
       showConfirmationMessage(
@@ -191,8 +235,8 @@ export default {
       );
     },
     addMessage() {
-      let entry = { type: this.messageType };
-      if (this.messageType === "SMS") entry.sender = this.selectedAll[0].key;
+      let entry = { type: this.type };
+      if (this.type === "SMS") entry.sender = this.selectedAll[0].key;
       else entry.packageName = this.selectedAll[0].key;
       console.log("add record " + entry);
       const httpService = new HttpMonitor();
@@ -208,7 +252,7 @@ export default {
     deleteMessage() {
       // chiedi conferma
       const httpService = new HttpMonitor();
-      let record = this.filterSelected[0];
+      let record = this.selected[0];
       httpService
         .deleteMessageFilter(record)
         .then((response) => {
@@ -224,26 +268,24 @@ export default {
       this.getMessageFilter();
       this.getNotificationMessage();
     },
-    onFilterRowSelected(items) {
-      this.filterSelected = items;
+    onRowSelected(items) {
+      this.selected = items;
     },
-    onNotFilteredMessagRowSelected(items) {
+    onRowSelectedAll(items) {
       this.selectedAll = items;
       if (items.length === 0) this.visibleMessage = false;
       else this.listMessages();
     },
     getMessageFilter() {
       const httpService = new HttpMonitor();
-      let isSMS = this.messageType === "SMS";
-      let label = isSMS ? "Origine" : "Nome pacchetto";
-      this.filterHeaderLabel =
-        "Filtri attivi per " + (isSMS ? "messaggi SMS" : "notifiche PUSH");
-      this.filterFields = [
+      //let type = this.$route.query.type;
+      let label = this.type === "SMS" ? "Origine" : "Nome pacchetto";
+      this.fields = [
         { key: "selezionato", label: "Selezionato" },
         { key: "key", label: label, sortable: true },
       ];
       httpService
-        .getMessageFilter(this.messageType)
+        .getMessageFilter(this.type)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -252,12 +294,12 @@ export default {
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               datiServers.push(
-                isSMS
+                this.type === "SMS"
                   ? { key: dati[i].sender, _id: dati[i]._id }
                   : { key: dati[i].packageName, _id: dati[i]._id }
               );
             }
-            this.filterItems = datiServers;
+            this.items = datiServers;
           } else showMsgErroreEsecuzione(this, esito, "getMessageFilter");
         })
         .catch((error) => {
@@ -266,16 +308,14 @@ export default {
     },
     getNotificationMessage() {
       const httpService = new HttpMonitor();
-      let isSMS = this.messageType === "SMS";
-      this.notFilteredMessageHeaderLabel =
-        (isSMS ? "Messaggi SMS" : "Notifiche PUSH") + " accettati";
-      let label = isSMS ? "Origine" : "Nome pacchetto";
+      //let type = this.$route.query.type;
+      let label = this.type === "SMS" ? "Origine" : "Nome pacchetto";
       this.fieldsAll = [
         { key: "selezionatoAA", label: "Selezionato" },
         { key: "key", label: label, sortable: true },
       ];
       httpService
-        .getNotificationMessage(this.messageType)
+        .getNotificationMessage(this.type)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -293,16 +333,13 @@ export default {
         });
     },
     listMessages() {
-      let isSMS = this.messageType === "SMS";
-      this.sampleMessagesHeaderLabel =
-        (isSMS
-          ? "Esempio di messaggi SMS ricevuti da "
-          : "Esempio di notifiche PUSH ricevite da ") + this.selectedAll[0].key;
       const httpService = new HttpMonitor();
+      //let type = this.$route.query.type;
+      //let label = this.type === "SMS" ? "sender" : "package_name";
       this.fieldsSampleMessages = [
         { key: "date", label: "Data", sortable: true },
       ];
-      if (!isSMS)
+      if (this.type === "PUSH")
         this.fieldsSampleMessages.push({
           key: "sender",
           label: "Origine",
@@ -314,7 +351,7 @@ export default {
         sortable: true,
       });
       httpService
-        .listMessages(this.messageType, this.selectedAll[0].key)
+        .listMessages(this.type, this.selectedAll[0].key)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -327,7 +364,7 @@ export default {
                   "DD/MM/YY HH:MM"
                 ),
               };
-              if (!isSMS) entry.sender = dati[i].sender;
+              if (this.type === "PUSH") entry.sender = dati[i].sender;
               entry.message = dati[i].message;
               datiServers.push(entry);
             }

@@ -1,15 +1,29 @@
 <template>
   <div class="app">
-    <b-card>
-      <b-form-group label="Tipo messaggio" class="ml-3">
-        <b-form-radio-group
-          id="msgAccepted"
-          v-model="messageType"
-          :options="messageTypeOptions"
-          @input="changeType"
-        ></b-form-radio-group>
-      </b-form-group>
-      <h3>Messaggi {{ this.messageType }} ricevuti</h3>
+    <b-card :header="receivedMessageHeaderLabel">
+      <b-row class="ml-0">
+        <b-form-group label="Tipo messaggio" class="col-sm-3">
+          <b-form-radio-group
+            id="messageTypeId"
+            v-model="messageType"
+            :options="messageTypeOptions"
+            @input="changeType"
+          ></b-form-radio-group>
+        </b-form-group>
+        <b-form-group
+          label="Escludi numeri telefonici"
+          class="col-sm-3"
+          :disabled="messageType != 'SMS'"
+        >
+          <b-form-checkbox
+            id="excludeNumberId"
+            v-model="excludeNumber"
+            :options="messageTypeOptions"
+            @change="changeNumber"
+          ></b-form-checkbox>
+        </b-form-group>
+      </b-row>
+
       <b-table
         ref="receivedMessage"
         selectable
@@ -25,16 +39,22 @@
         small
         bordered
         sticky-header
+        :busy="isReceivedMessageBusy"
       >
+        <template v-slot:table-busy>
+          <div class="text-center text-danger my-2">
+            <b-spinner class="align-middle"></b-spinner>
+            <strong>Loading...</strong>
+          </div>
+        </template>
       </b-table>
     </b-card>
-    <b-collapse id="collapse-2-inner" v-model="visibleMessage" class="mt-2">
-      <b-card>
-        <h3>Dettaglio Messaggi {{ this.messageType }} ricevuti</h3>
+    <b-collapse id="collapse-2-inner" v-model="sampleMessagesShow" class="mt-2">
+      <b-card :header="sampleMessagesHeaderLabel">
         <b-table
           ref="sampleMessages"
-          :items="itemsSampleMessages"
-          :fields="fieldsSampleMessages"
+          :items="sampleMessagesItems"
+          :fields="sampleMessagesFields"
           responsive="sm"
           sort-icon-left
           head-variant="light"
@@ -45,29 +65,35 @@
           selectable
           select-mode="multi"
           selected-variant="primary"
-          @row-selected="onRowSelectedMessage"
+          @row-selected="onSampleMessagesRowSelected"
+          :busy="isSampleMessagesBusy"
         >
+          <template v-slot:table-busy>
+            <div class="text-center text-danger my-2">
+              <b-spinner class="align-middle"></b-spinner>
+              <strong>Loading...</strong>
+            </div>
+          </template>
         </b-table>
-        <b-row class="justify-content-md-left">
+        <b-row class="ml-0">
           <b-button
-            class="mx-2"
             variant="primary"
-            :disabled="itemsSampleMessages.length === 0"
+            :disabled="sampleMessagesItems.length === 0"
             @click="selectAllMessages"
             >Seleziona Tutti</b-button
           >
           <b-button
-            class="mx-2"
+            class="ml-2"
             variant="primary"
             @click="deselectAllMessages"
-            :disabled="selectedMessage.length === 0"
+            :disabled="sampleMessagesSelected.length === 0"
             >Annulla Selezione</b-button
           >
           <b-button
-            class="mx-2"
+            class="ml-2"
             variant="primary"
             @click="processMessages"
-            :disabled="selectedMessage.length === 0"
+            :disabled="sampleMessagesSelected.length === 0"
             >Analizza</b-button
           >
         </b-row>
@@ -78,38 +104,44 @@
 
 <script>
 import HttpMonitor from "@/services/httpMonitorRest";
+import {
+  showMsgEsitoEsecuzione,
+  showMsgErroreEsecuzione,
+  showConfirmationMessage,
+} from "@/services/utilities";
 
 export default {
   name: "GestioneMessaggi",
   data: function() {
     return {
-      selectedMessage: [],
       receivedMessageFields: [],
       receivedMessageItems: [],
-      selectedAll: [],
-      itemsSampleMessages: [],
-      fieldsSampleMessages: [],
-      visibleMessage: false,
+      receivedMessageSelected: [],
+      receivedMessageHeaderLabel: "",
+      sampleMessagesItems: [],
+      sampleMessagesFields: [],
+      sampleMessagesSelected: [],
+      sampleMessagesShow: false,
+      sampleMessagesHeaderLabel: "",
       messageType: "SMS",
+
       messageTypeOptions: [
         { text: "SMS", value: "SMS" },
         { text: "PUSH", value: "PUSH" },
       ],
+      isReceivedMessageBusy: false,
+      isSampleMessagesBusy: false,
+      excludeNumber: true,
     };
   },
   mounted: function() {
     this.getNotificationMessage();
   },
-  beforeUpdate: function() {
-    // console.log("BEFORE UPDATED");
-    // if (this.type != this.$route.query.type) {
-    //   this.type = this.$route.query.type;
-    //   this.getNotificationMessage();
-    // }
-  },
   methods: {
-    changeType() {
-      console.log("Change Type!! " + this.messageType);
+    changeType(name) {
+      this.reloadAndClear();
+    },
+    changeNumber(value) {
       this.reloadAndClear();
     },
     getRow(row) {
@@ -120,18 +152,24 @@ export default {
       this.$refs.receivedMessage.clearSelected();
     },
     deleteMessageMsgBox() {
-      this.showConfirmationMessage(
+      showConfirmationMessage(
+        this,
         "Confermi la cancellazione ?",
         this.deleteMessage
       );
     },
     addMessageMsgBox() {
-      this.showConfirmationMessage("Confermi l'inserimento ?", this.addMessage);
+      showConfirmationMessage(
+        this,
+        "Confermi l'inserimento ?",
+        this.addMessage
+      );
     },
     addMessage() {
       let entry = { type: this.messageType };
-      if (this.messageType === "SMS") entry.sender = this.selectedAll[0].key;
-      else entry.packageName = this.selectedAll[0].key;
+      if (this.messageType === "SMS")
+        entry.sender = this.receivedMessageSelected[0].key;
+      else entry.packageName = this.receivedMessageSelected[0].key;
       console.log("add record " + entry);
       const httpService = new HttpMonitor();
       httpService
@@ -144,7 +182,6 @@ export default {
         });
     },
     deleteMessage() {
-      // chiedi conferma
       const httpService = new HttpMonitor();
       let record = this.selected[0];
       httpService
@@ -160,14 +197,14 @@ export default {
       this.clearSelectedAll();
       this.getNotificationMessage();
     },
-    onRowSelectedMessage(items) {
-      this.selectedMessage = items;
+    onSampleMessagesRowSelected(items) {
+      this.sampleMessagesSelected = items;
     },
     onReceivedMessageRowSelected(items) {
-      this.selectedAll = items;
-      if (items.length === 0) this.visibleMessage = false;
+      this.receivedMessageSelected = items;
+      if (items.length === 0) this.sampleMessagesShow = false;
       else {
-        this.visibleMessage = true;
+        this.sampleMessagesShow = true;
         this.listMessages();
       }
     },
@@ -177,29 +214,18 @@ export default {
     deselectAllMessages() {
       this.$refs.sampleMessages.clearSelected();
     },
-    showConfirmationMessage(message, operation) {
-      this.$bvModal
-        .msgBoxConfirm(message)
-        .then((value) => {
-          if (value) operation();
-        })
-        .catch((err) => {
-          // An error occurred
-          console.error("Errore in msgbox conferma operazione : " + err);
-        });
-    },
     processMessages() {
-      this.showConfirmationMessage(
+      showConfirmationMessage(
+        this,
         "Confermi l'analisi dei messaggi selezionati ?",
         this.processSelectedMessages
       );
     },
     processSelectedMessages() {
       let msgIds = [];
-      for (let ix = 0; ix < this.selectedMessage.length; ix++) {
-        msgIds.push(this.selectedMessage[ix]["_id"]);
+      for (let ix = 0; ix < this.sampleMessagesSelected.length; ix++) {
+        msgIds.push(this.sampleMessagesSelected[ix]["_id"]);
       }
-      //console.log("process selected message " + JSON.stringify({ msgIds }));
       const httpService = new HttpMonitor();
       httpService
         .analizeMessages({ msgIds: msgIds })
@@ -224,17 +250,27 @@ export default {
                 " - Not accepted " +
                 notAccepted
             );
-          }
+            showMsgEsitoEsecuzione(
+              this,
+              `Non trovati : ${notFound} - Accettati : ${accepted} - Non accettati : ${notAccepted}`
+            );
+          } else showMsgErroreEsecuzione(this, esito, "analizeMessages");
         })
         .catch((error) => {
-          console.log("Error callig service 'getMessageFilter' : " + error);
+          showMsgErroreEsecuzione(this, error, "analizeMessages");
         });
     },
     getNotificationMessage() {
+      this.isReceivedMessageBusy = true;
+      this.receivedMessageHeaderLabel =
+        "Messaggi " + this.messageType + " Ricevuti";
       const httpService = new HttpMonitor();
       //let type = this.$route.query.type;
-      let label = this.messageType === "SMS" ? "Origine" : "Nome pacchetto";
-      this.receivedMessageFields = [{ key: "key", label: label, sortable: true }];
+      let isSMS = this.messageType === "SMS";
+      let label = isSMS ? "Origine messaggio" : "Nome pacchetto notifica";
+      this.receivedMessageFields = [
+        { key: "key", label: label, sortable: true },
+      ];
       httpService
         .getNotificationMessage(this.messageType)
         .then((response) => {
@@ -244,38 +280,48 @@ export default {
             let dati = data.data;
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
-              datiServers.push({ key: dati[i] });
+              if (isSMS) {
+                let s = isNaN(dati[i]);
+                console.log("String : " + s + " -> " + dati[i]);
+                if (s) datiServers.push({ key: dati[i] });
+                else if (!this.excludeNumber)
+                  datiServers.push({ key: dati[i] });
+              } else datiServers.push({ key: dati[i] });
             }
             this.receivedMessageItems = datiServers;
-          } else
-            console.log(
-              "Error callig service 'getMessageFilter' : " + esito.message
-            );
+          } else showMsgErroreEsecuzione(this, esito, "getNotificationMessage");
+          this.isReceivedMessageBusy = false;
         })
         .catch((error) => {
-          console.log("Error callig service 'getMessageFilter' : " + error);
+          showMsgErroreEsecuzione(this, error, "getNotificationMessage");
+          this.isReceivedMessageBusy = false;
         });
     },
     listMessages() {
+      let isSMS = this.messageType === "SMS";
+      this.isSampleMessagesBusy = true;
       const httpService = new HttpMonitor();
-      //let type = this.$route.query.type;
-      //let label = this.type === "SMS" ? "sender" : "package_name";
-      this.fieldsSampleMessages = [
+      this.sampleMessagesHeaderLabel =
+        (isSMS
+          ? "Dettaglio messaggi SMS ricevuti da "
+          : "Dettaglio notifiche PUSH ricevute da ") +
+        this.receivedMessageSelected[0].key;
+      this.sampleMessagesFields = [
         { key: "date", label: "Data", sortable: true },
       ];
-      if (this.messageType === "PUSH")
-        this.fieldsSampleMessages.push({
+      if (!isSMS)
+        this.sampleMessagesFields.push({
           key: "sender",
           label: "Origine",
           sortable: true,
         });
-      this.fieldsSampleMessages.push({
+      this.sampleMessagesFields.push({
         key: "message",
         label: "Messaggio",
         sortable: true,
       });
       httpService
-        .listMessages(this.messageType, this.selectedAll[0].key)
+        .listMessages(this.messageType, this.receivedMessageSelected[0].key)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -289,18 +335,17 @@ export default {
                 ),
                 _id: dati[i]._id,
               };
-              if (this.messageType === "PUSH") entry.sender = dati[i].sender;
+              if (!isSMS) entry.sender = dati[i].sender;
               entry.message = dati[i].message;
               datiServers.push(entry);
             }
-            this.itemsSampleMessages = datiServers;
-          } else
-            console.log(
-              "Error callig service 'listMessages' : " + esito.message
-            );
+            this.sampleMessagesItems = datiServers;
+          } else showMsgErroreEsecuzione(this, esito, "listMessages");
+          this.isSampleMessagesBusy = false;
         })
         .catch((error) => {
-          console.log("Error callig service 'listMessages' : " + error);
+          showMsgErroreEsecuzione(this, error, "listMessages");
+          this.isSampleMessagesBusy = false;
         });
     },
   },

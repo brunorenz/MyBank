@@ -157,18 +157,8 @@ export default {
             {
               name: "Filtri",
               icon: "fa fa-filter",
-              children: [
-                {
-                  name: "PUSH",
-                  url: "/gestioneFiltri?type=PUSH",
-                  attributes: { disabled: !isLogged },
-                },
-                {
-                  name: "SMS",
-                  url: "/gestioneFiltri?type=SMS",
-                  attributes: { disabled: !isLogged },
-                },
-              ],
+              url: "/gestioneFiltri",
+              attributes: { disabled: !isLogged },
             },
             {
               name: "Messaggi",
