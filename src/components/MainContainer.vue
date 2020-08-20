@@ -168,7 +168,7 @@ export default {
             },
             {
               name: "Regole",
-              url: "/rules",
+              url: "/gestioneRegole",
               icon: "fa fa-handshake-o",
               badge: {
                 variant: "primary",

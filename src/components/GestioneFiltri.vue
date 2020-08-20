@@ -296,8 +296,8 @@ export default {
       let isSMS = this.messageType === "SMS";
       this.sampleMessagesHeaderLabel =
         (isSMS
-          ? "Esempio di messaggi SMS ricevuti da "
-          : "Esempio di notifiche PUSH ricevite da ") + this.selectedAll[0].key;
+          ? "Ultimi messaggi SMS ricevuti da "
+          : "Ultime notifiche PUSH ricevite da ") + this.selectedAll[0].key;
       const httpService = new HttpMonitor();
       this.fieldsSampleMessages = [
         { key: "date", label: "Data", sortable: true },

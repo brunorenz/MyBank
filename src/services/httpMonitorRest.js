@@ -1,8 +1,6 @@
 import axios from "axios";
 import {
-  TypeAction,
   getConfiguration,
-  TypeProgramming,
   SecurityConfiguration,
   doLogoff,
   getXrfToken,
@@ -17,18 +15,11 @@ const ADD_MESSAGEFILTER = "addMessageFilter";
 const LIST_MESSAGES = "listMessages";
 const ANALIZE_MESSAGES = "analizeMessages";
 const LIST_MOVEMENTS = "listAccountMovements";
+const GET_RULES = "getMessageRule";
+const DELETE_RULES = "deleteMessageRule";
+const UPDATE_RULES = "updatemessageRule";
 //
-const UPDATE_CONFIGURATION = "updateConfiguration";
-const UPDATE_STATUS = "updateStatus";
 
-const GET_SENSORDATA = "getSensorData";
-const GET_RELEDATA = "getReleData";
-const GET_PROGRAMMING = "getProgramming";
-const ADD_PROGRAMMING = "addProgramming";
-const GET_R_STATISTICS = "getReleStatistics";
-const GET_S_STATISTICS = "getSensorStatistics";
-const DELETE_PROGRAMMING = "deleteProgramming";
-const UPDATE_PROGRAMMING = "updateProgramming";
 const LOGIN = "login";
 
 const local = false;
@@ -56,8 +47,6 @@ axios.interceptors.response.use(
       error.response.status === 403
     ) {
       doLogoff();
-      // window.sessionStorage.removeItem("jwttoken");
-      // window.sessionStorage.removeItem("jwt");
       router.push("/login");
     }
     return Promise.reject(error);
@@ -131,12 +120,12 @@ export default class HttpMonitor {
     });
   }
 
-  getWeatherInfo() {
-    let url = this.configuration.weatherMonitor.weatherUrl;
-    url = url + "&id=" + this.configuration.weatherMonitor.id;
-    console.log("Call " + url);
-    return axios.get(url, {});
-  }
+  // getWeatherInfo() {
+  //   let url = this.configuration.weatherMonitor.weatherUrl;
+  //   url = url + "&id=" + this.configuration.weatherMonitor.id;
+  //   console.log("Call " + url);
+  //   return axios.get(url, {});
+  // }
 
   /**
    * Get message filter by type
@@ -153,6 +142,10 @@ export default class HttpMonitor {
     });
   }
 
+  /**
+   * Analize message
+   * @param {*} msgIds
+   */
   analizeMessages(msgIds) {
     let url = this.getUrl(ANALIZE_MESSAGES);
     return axios.post(url, JSON.stringify(msgIds), {
@@ -160,10 +153,26 @@ export default class HttpMonitor {
     });
   }
 
+  /**
+   * get account movements
+   * @param {*} filter
+   */
   listAccountMovements(filter) {
     let url = this.getUrl(LIST_MOVEMENTS);
     return axios.post(url, JSON.stringify(filter), {
       headers: this.getPostJsonSecurityHeader(),
+    });
+  }
+
+  getMessageRule(type, key, key2) {
+    var queryParams = [{ key: "type", value: type }];
+    if (typeof key != "undefined") {
+      queryParams.push({ key: "key", value: key });
+      if (typeof key2 != "undefined")
+        queryParams.push({ key: "key2", value: key2 });
+    }
+    return axios.get(this.getUrl(GET_RULES, queryParams), {
+      headers: this.getSecurityHeader(),
     });
   }
 
@@ -202,56 +211,6 @@ export default class HttpMonitor {
     let url = this.getUrl(ADD_MESSAGEFILTER);
     return axios.post(url, JSON.stringify(inputData), {
       headers: this.getPostJsonSecurityHeader(),
-    });
-  }
-
-  getStatistics(sType, type, interval) {
-    var queryParams = [
-      { key: "type", value: type },
-      { key: "interval", value: interval },
-    ];
-    return axios.get(
-      this.getUrl(
-        sType === "RELE" ? GET_R_STATISTICS : GET_S_STATISTICS,
-        queryParams
-      ),
-      {
-        headers: this.getSecurityHeader(),
-      }
-    );
-  }
-
-  getProgramming(type) {
-    let qType = "temp";
-    if (type) qType = type === TypeProgramming.THEMP ? "temp" : "light";
-    var queryParams = [{ key: "type", value: qType }];
-    return axios.get(this.getUrl(GET_PROGRAMMING, queryParams), {
-      headers: this.getSecurityHeader(),
-    });
-  }
-
-  getSensorData() {
-    return axios.get(this.getUrl(GET_SENSORDATA), {
-      headers: this.getSecurityHeader(),
-    });
-  }
-
-  getReleData() {
-    return axios.get(this.getUrl(GET_RELEDATA), {
-      headers: this.getSecurityHeader(),
-    });
-  }
-
-  updateConfiguration(inputData) {
-    let url = this.getUrl(UPDATE_CONFIGURATION);
-    return axios.post(url, "data=" + JSON.stringify(inputData), {
-      headers: this.getPostSecurityHeader(),
-    });
-  }
-  updateStatus(inputData) {
-    let url = this.getUrl(UPDATE_STATUS);
-    return axios.post(url, "data=" + JSON.stringify(inputData), {
-      headers: this.getPostSecurityHeader(),
     });
   }
 }

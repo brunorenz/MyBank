@@ -50,7 +50,10 @@
       </b-table>
     </b-card>
     <b-collapse id="collapse-2-inner" v-model="sampleMessagesShow" class="mt-2">
-      <b-card :header="sampleMessagesHeaderLabel">
+      <b-card>
+        <div slot="header">
+          <b v-bind:style="defProgStyle">{{ sampleMessagesHeaderLabel }}</b>
+        </div>
         <b-table
           ref="sampleMessages"
           :items="sampleMessagesItems"
@@ -62,7 +65,7 @@
           small
           bordered
           sticky-header
-          selectable
+          selectable="false"
           select-mode="multi"
           selected-variant="primary"
           @row-selected="onSampleMessagesRowSelected"
@@ -75,8 +78,17 @@
             </div>
           </template>
         </b-table>
-        <b-row class="ml-0">
+        <b-row class="ml-0" v-if="isRuleDefined === false">
+          <b-button variant="primary" @click="selectAllMessages"
+            >Aggiungi Regola</b-button
+          >
+        </b-row>
+        <b-row class="ml-0" v-if="isRuleDefined === true">
+          <b-button variant="primary" @click="selectAllMessages"
+            >Gestisci Regola</b-button
+          >
           <b-button
+            class="ml-2"
             variant="primary"
             :disabled="sampleMessagesItems.length === 0"
             @click="selectAllMessages"
@@ -132,6 +144,9 @@ export default {
       isReceivedMessageBusy: false,
       isSampleMessagesBusy: false,
       excludeNumber: true,
+      defProgStyle: "",
+      isRuleDefined: false,
+      rules: null,
     };
   },
   mounted: function() {
@@ -300,7 +315,25 @@ export default {
     listMessages() {
       let isSMS = this.messageType === "SMS";
       this.isSampleMessagesBusy = true;
+      let self = this;
       const httpService = new HttpMonitor();
+      let selectedRecord = this.receivedMessageSelected[0];
+      let alP = [];
+      let p1 = new Promise(function(resolve, reject) {
+        console.log("Promise P1!");
+        httpService
+          .getMessageRule(
+            self.messageType,
+            selectedRecord.key,
+            selectedRecord.key2
+          )
+          .then((response) => {
+            resolve(response.data);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
       this.sampleMessagesHeaderLabel =
         (isSMS
           ? "Dettaglio messaggi SMS ricevuti da "
@@ -320,32 +353,54 @@ export default {
         label: "Messaggio",
         sortable: true,
       });
-      httpService
-        .listMessages(this.messageType, this.receivedMessageSelected[0].key)
-        .then((response) => {
-          var data = response.data;
-          let esito = data.error;
+      let p2 = new Promise(function(resolve, reject) {
+        console.log("Promise P2!");
+        httpService
+          .listMessages(self.messageType, selectedRecord.key)
+          .then((response) => {
+            resolve(response.data);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
+
+      Promise.all([p1, p2])
+        .then(function(values) {
+          // analize rule
+          let esito = values[0].error;
+          let found = false;
           if (esito.code === 0) {
-            let dati = data.data;
+            if (values[0].data.length > 0) {
+              found = true;
+              self.rules = values[0].data;
+            }
+          }
+          self.isRuleDefined = found;
+          // analize message
+          esito = values[1].error;
+          if (esito.code === 0) {
+            let dati = values[1].data;
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               let entry = {
-                date: this.$moment(new Date(dati[i].time)).format(
-                  "DD/MM/YY HH:MM"
-                ),
+                date: self
+                  .$moment(new Date(dati[i].time))
+                  .format("DD/MM/YY HH:MM"),
                 _id: dati[i]._id,
               };
               if (!isSMS) entry.sender = dati[i].sender;
               entry.message = dati[i].message;
               datiServers.push(entry);
             }
-            this.sampleMessagesItems = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "listMessages");
-          this.isSampleMessagesBusy = false;
+            self.sampleMessagesItems = datiServers;
+          } else showMsgErroreEsecuzione(self, esito, "listMessages");
+
+          self.isSampleMessagesBusy = false;
         })
-        .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "listMessages");
-          this.isSampleMessagesBusy = false;
+        .catch(function(error) {
+          showMsgErroreEsecuzione(self, error, "listMessages");
+          self.isSampleMessagesBusy = false;
         });
     },
   },
