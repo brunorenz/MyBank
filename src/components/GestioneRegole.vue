@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <b-card :header="rulesHeaderLabel">
+    <b-card :header="rulesHeaderLabel" v-if="fromMessaggi === false">
       <b-row class="ml-0">
         <b-form-group label="Tipo messaggio" class="col-sm-3">
           <b-form-radio-group
@@ -43,21 +43,9 @@
 
     <b-card header="Dettaglio" v-if="ruleDetailShow">
       <ruleDefinition
-        :model="ruleSelected === null ? null : ruleSelected.rules"
-        :type="messageType"
+        :ruleId="ruleSelected._id"
         v-on:updateRules="updateRules"
       ></ruleDefinition>
-      <b-row class="ml-0">
-        <b-button variant="primary" @click="updateRule(true)"
-          >Aggiungi regola</b-button
-        >
-        <b-button variant="primary" @click="updateRule(true)"
-          >Modifica regola</b-button
-        >
-        <b-button class="ml-2" variant="danger" @click="deleteRule(true)"
-          >Elimina regola</b-button
-        >
-      </b-row>
     </b-card>
   </div>
 </template>
@@ -90,10 +78,20 @@ export default {
       ],
       isRulesBusy: false,
       ruleSelected: null,
+      fromMessaggi: false,
+      messageId: null,
     };
   },
   mounted: function() {
     this.getRules();
+  },
+  beforeUpdate: function() {
+    if (typeof this.$route.query.id != "undefined") {
+      // search message rules
+      this.fromMessaggi = true;
+      this.messageId = this.$route.query.id;
+      this.ruleDetailShow = true;
+    }
   },
   methods: {
     changeType(name) {

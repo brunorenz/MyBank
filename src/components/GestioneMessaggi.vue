@@ -1,55 +1,57 @@
 <template>
   <div class="app">
-    <b-card :header="receivedMessageHeaderLabel">
-      <b-row class="ml-0">
-        <b-form-group label="Tipo messaggio" class="col-sm-3">
-          <b-form-radio-group
-            id="messageTypeId"
-            v-model="messageType"
-            :options="messageTypeOptions"
-            @input="changeType"
-          ></b-form-radio-group>
-        </b-form-group>
-        <b-form-group
-          label="Escludi numeri telefonici"
-          class="col-sm-3"
-          :disabled="messageType != 'SMS'"
-        >
-          <b-form-checkbox
-            id="excludeNumberId"
-            v-model="excludeNumber"
-            :options="messageTypeOptions"
-            @change="changeNumber"
-          ></b-form-checkbox>
-        </b-form-group>
-      </b-row>
+    <b-collapse v-model="receivedMessagesShow">
+      <b-card :header="receivedMessageHeaderLabel">
+        <b-row class="ml-0">
+          <b-form-group label="Tipo messaggio" class="col-sm-3">
+            <b-form-radio-group
+              id="messageTypeId"
+              v-model="messageType"
+              :options="messageTypeOptions"
+              @input="changeType"
+            ></b-form-radio-group>
+          </b-form-group>
+          <b-form-group
+            label="Escludi numeri telefonici"
+            class="col-sm-3"
+            :disabled="messageType != 'SMS'"
+          >
+            <b-form-checkbox
+              id="excludeNumberId"
+              v-model="excludeNumber"
+              :options="messageTypeOptions"
+              @change="changeNumber"
+            ></b-form-checkbox>
+          </b-form-group>
+        </b-row>
 
-      <b-table
-        ref="receivedMessage"
-        selectable
-        select-mode="single"
-        :items="receivedMessageItems"
-        :fields="receivedMessageFields"
-        selected-variant="primary"
-        @row-selected="onReceivedMessageRowSelected"
-        responsive="sm"
-        sort-icon-left
-        head-variant="light"
-        striped
-        small
-        bordered
-        sticky-header
-        :busy="isReceivedMessageBusy"
-      >
-        <template v-slot:table-busy>
-          <div class="text-center text-danger my-2">
-            <b-spinner class="align-middle"></b-spinner>
-            <strong>Loading...</strong>
-          </div>
-        </template>
-      </b-table>
-    </b-card>
-    <b-collapse id="collapse-2-inner" v-model="sampleMessagesShow" class="mt-2">
+        <b-table
+          ref="receivedMessage"
+          selectable
+          select-mode="single"
+          :items="receivedMessageItems"
+          :fields="receivedMessageFields"
+          selected-variant="primary"
+          @row-selected="onReceivedMessageRowSelected"
+          responsive="sm"
+          sort-icon-left
+          head-variant="light"
+          striped
+          small
+          bordered
+          sticky-header
+          :busy="isReceivedMessageBusy"
+        >
+          <template v-slot:table-busy>
+            <div class="text-center text-danger my-2">
+              <b-spinner class="align-middle"></b-spinner>
+              <strong>Loading...</strong>
+            </div>
+          </template>
+        </b-table>
+      </b-card>
+    </b-collapse>
+    <b-collapse v-model="sampleMessagesShow">
       <b-card>
         <div slot="header">
           <b v-bind:style="defProgStyle">{{ sampleMessagesHeaderLabel }}</b>
@@ -65,7 +67,7 @@
           small
           bordered
           sticky-header
-          selectable="false"
+          selectable
           select-mode="multi"
           selected-variant="primary"
           @row-selected="onSampleMessagesRowSelected"
@@ -79,12 +81,17 @@
           </template>
         </b-table>
         <b-row class="ml-0" v-if="isRuleDefined === false">
-          <b-button variant="primary" @click="selectAllMessages"
+          <b-button variant="primary" @click="manageRule(true)"
             >Aggiungi Regola</b-button
           >
         </b-row>
         <b-row class="ml-0" v-if="isRuleDefined === true">
-          <b-button variant="primary" @click="selectAllMessages"
+          <b-button
+            variant="primary"
+            @click="manageRule(false)"
+            :disabled="
+              messageType === 'PUSH' && sampleMessagesSelected.length != 1
+            "
             >Gestisci Regola</b-button
           >
           <b-button
@@ -111,6 +118,12 @@
         </b-row>
       </b-card>
     </b-collapse>
+    <b-card header="Dettaglio" v-if="ruleShow === true">
+      <ruleDefinition
+        :message="selectedMessage"
+        v-on:updateRules="updateRules"
+      ></ruleDefinition>
+    </b-card>
   </div>
 </template>
 
@@ -121,15 +134,20 @@ import {
   showMsgErroreEsecuzione,
   showConfirmationMessage,
 } from "@/services/utilities";
+import RuleDefinitionForm from "@/components/common/RuleDefinitionForm";
 
 export default {
   name: "GestioneMessaggi",
+  components: {
+    ruleDefinition: RuleDefinitionForm,
+  },
   data: function() {
     return {
       receivedMessageFields: [],
       receivedMessageItems: [],
       receivedMessageSelected: [],
       receivedMessageHeaderLabel: "",
+      receivedMessagesShow: true,
       sampleMessagesItems: [],
       sampleMessagesFields: [],
       sampleMessagesSelected: [],
@@ -147,68 +165,44 @@ export default {
       defProgStyle: "",
       isRuleDefined: false,
       rules: null,
+      ruleShow: false,
+      selectedMessage: null,
     };
   },
   mounted: function() {
     this.getNotificationMessage();
   },
   methods: {
+    updateRules() {
+      this.reloadAndClear();
+      this.ruleShow = false;
+      this.sampleMessagesShow = false;
+      this.receivedMessagesShow = true;
+    },
+    manageRule(add) {
+      console.log("Add rule : " + add);
+      let msg = null;
+      if (this.sampleMessagesSelected.length === 0)
+        msg = this.sampleMessagesItems[0].fullMessage;
+      else msg = this.sampleMessagesSelected[0].fullMessage;
+      //msg.type = this.messageType;
+      this.selectedMessage = msg;
+      this.ruleShow = true;
+      this.sampleMessagesShow = false;
+      this.receivedMessagesShow = false;
+    },
     changeType(name) {
       this.reloadAndClear();
     },
     changeNumber(value) {
       this.reloadAndClear();
     },
-    getRow(row) {
-      console.log("ROW = " + row);
-      return row;
-    },
+
     clearSelectedAll() {
       this.$refs.receivedMessage.clearSelected();
     },
-    deleteMessageMsgBox() {
-      showConfirmationMessage(
-        this,
-        "Confermi la cancellazione ?",
-        this.deleteMessage
-      );
-    },
-    addMessageMsgBox() {
-      showConfirmationMessage(
-        this,
-        "Confermi l'inserimento ?",
-        this.addMessage
-      );
-    },
-    addMessage() {
-      let entry = { type: this.messageType };
-      if (this.messageType === "SMS")
-        entry.sender = this.receivedMessageSelected[0].key;
-      else entry.packageName = this.receivedMessageSelected[0].key;
-      console.log("add record " + entry);
-      const httpService = new HttpMonitor();
-      httpService
-        .addMessageFilter(entry)
-        .then((response) => {
-          this.reloadAndClear();
-        })
-        .catch((error) => {
-          console.log("Error callig service 'addMessageFilter' : " + error);
-        });
-    },
-    deleteMessage() {
-      const httpService = new HttpMonitor();
-      let record = this.selected[0];
-      httpService
-        .deleteMessageFilter(record)
-        .then((response) => {
-          this.reloadAndClear();
-        })
-        .catch((error) => {
-          console.log("Error callig service 'deleteMessageFilter' : " + error);
-        });
-    },
     reloadAndClear() {
+      this.ruleShow = false;
       this.clearSelectedAll();
       this.getNotificationMessage();
     },
@@ -222,6 +216,7 @@ export default {
         this.sampleMessagesShow = true;
         this.listMessages();
       }
+      this.ruleShow = false;
     },
     selectAllMessages() {
       this.$refs.sampleMessages.selectAllRows();
@@ -239,7 +234,7 @@ export default {
     processSelectedMessages() {
       let msgIds = [];
       for (let ix = 0; ix < this.sampleMessagesSelected.length; ix++) {
-        msgIds.push(this.sampleMessagesSelected[ix]["_id"]);
+        msgIds.push(this.sampleMessagesSelected[ix]["fullMessage"]["_id"]);
       }
       const httpService = new HttpMonitor();
       httpService
@@ -313,6 +308,8 @@ export default {
         });
     },
     listMessages() {
+      //TODO impostare limite
+      // recupero messagi e regole
       let isSMS = this.messageType === "SMS";
       this.isSampleMessagesBusy = true;
       let self = this;
@@ -344,12 +341,12 @@ export default {
       ];
       if (!isSMS)
         this.sampleMessagesFields.push({
-          key: "sender",
+          key: "fullMessage.sender",
           label: "Origine",
           sortable: true,
         });
       this.sampleMessagesFields.push({
-        key: "message",
+        key: "fullMessage.message",
         label: "Messaggio",
         sortable: true,
       });
@@ -387,10 +384,11 @@ export default {
                 date: self
                   .$moment(new Date(dati[i].time))
                   .format("DD/MM/YY HH:MM"),
-                _id: dati[i]._id,
+                //_id: dati[i]._id,
+                fullMessage: dati[i],
               };
-              if (!isSMS) entry.sender = dati[i].sender;
-              entry.message = dati[i].message;
+              //if (!isSMS) entry.sender = dati[i].sender;
+              //entry.message = dati[i].message;
               datiServers.push(entry);
             }
             self.sampleMessagesItems = datiServers;

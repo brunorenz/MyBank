@@ -1,22 +1,44 @@
 <template>
-  <div>
-    <b-card v-for="entry in model" :key="entry.ix">
+  <div v-if="rule != null">
+    <b-row>
+      <b-col sm="2">
+        <label class="font-weight-bold">{{
+          rule.type === "SMS" ? "Orgine" : "Nome"
+        }}</label>
+      </b-col>
+      <b-col sm="4">
+        <label>
+          {{ rule.key }}
+        </label>
+      </b-col>
+      <b-col sm="2" v-if="rule.type === 'PUSH'">
+        <label class="font-weight-bold">Identificativo</label>
+      </b-col>
+      <b-col sm="4" v-if="rule.type === 'PUSH'">
+        <label>
+          {{ rule.key2 }}
+        </label>
+      </b-col>
+    </b-row>
+
+    <b-card v-for="entry in rule.rules" :key="entry.ix">
       <b-row>
         <b-col sm="2">
           <b-row class="text-center">
-            <b-button
-              class="mx-1 my-1"
-              variant="primary"
-              @click="manageButton('addB', entry.ix)"
-            >
-              <b-icon icon="plus"></b-icon>
-            </b-button>
             <b-button
               class="my-1"
               variant="primary"
               @click="manageButton('deleteB', entry.ix)"
             >
               <b-icon icon="trash"></b-icon>
+            </b-button>
+            <b-button
+              v-if="entry.ix === rule.rules.length - 1"
+              class="mx-1 my-1"
+              variant="primary"
+              @click="manageButton('addB', entry.ix)"
+            >
+              <b-icon icon="plus"></b-icon>
             </b-button>
           </b-row>
         </b-col>
@@ -79,64 +101,137 @@
         </b-col>
       </b-row>
     </b-card>
+    <b-row class="ml-0">
+      <b-button variant="primary" @click="annulla">Annulla</b-button>
+      <b-button variant="primary" @click="updateRule(true)" class="ml-2"
+        >Aggiungi regola</b-button
+      >
+      <b-button variant="primary" @click="updateRule(true)" class="ml-2"
+        >Modifica regola</b-button
+      >
+      <b-button class="ml-2" variant="danger" @click="deleteRule(true)"
+        >Elimina regola</b-button
+      >
+    </b-row>
   </div>
 </template>
 <script>
 import { getConfiguration } from "@/services/config";
+import HttpMonitor from "@/services/httpMonitorRest";
+import {
+  showMsgEsitoEsecuzione,
+  showMsgErroreEsecuzione,
+  showConfirmationMessage,
+} from "@/services/utilities";
 export default {
   name: "RuleDefinitionForm",
-  props: ["model", "type"],
+  props: ["ruleId", "message"],
   data: function() {
     return {
-      tmpRules: {},
+      rule: null,
+      savedRule: {},
       attrTypeOptions: [],
       attrTypeProp: {},
+      messageId: null,
     };
   },
 
   computed: {},
   beforeMount: function() {
-    console.log(
-      ">>>> RuleDefinitionForm : beforeMount : reset configuration.."
-    );
+    console.log(">>>> RuleDefinitionForm : beforeMount");
     this.resetConfiguration();
   },
   mounted: function() {
     console.log(">>>> RuleDefinitionForm : mounted");
+    this.getRule();
+    this.updateButton();
   },
   beforeUpdate: function() {
-    console.log(">>>> RuleDefinitionForm : beforeUpdate..");
+    console.log(">>>> RuleDefinitionForm : beforeUpdate");
+    this.getRule();
     this.updateButton();
   },
   methods: {
     isVisible(key) {
       return true;
     },
+    annulla() {
+      this.$emit("updateRules");
+    },
+    addNewRule() {
+      let rule = {
+        rules: [{ key: "DATA", rule: {} }],
+        bankId: null,
+        type: this.message.type,
+        key:
+          this.message.type === "SMS"
+            ? this.message.sender
+            : this.message.packageName,
+      };
+      if (this.message.type === "SMS") rule.key2 = this.message.sender;
+      this.rule = rule;
+      this.savedRule = JSON.parse(JSON.stringify(this.rule));
+    },
+    checkNullInputData() {
+      let nullData =
+        typeof this.message === "undefined" || this.message === null;
+      if (nullData)
+        nullData = typeof this.ruleId === "undefined" || this.ruleId === null;
+      else this.messageId = this.message._id;
+      return nullData;
+    },
+    confermaNuovaRegola() {
+      let options = {
+        title: "Confermi Operazione",
+        okVariant: "success",
+        cancelVariant: "danger",
+        footerClass: "p-2 border-top-0",
+        centered: true,
+      };
+      this.$bvModal
+        .msgBoxConfirm("Comfermi l'inserimento di una nuova regola ?", options)
+        .then((value) => {
+          if (value) {
+            this.addNewRule();
+          } else {
+            this.annulla();
+          }
+        })
+        .catch((err) => {
+          console.error("Errore in display msgbox : " + err);
+        });
+    },
     checkField(event) {
       let change = false;
-      if (this.model.length != this.tmpRules.length) change = true;
-      else {
-        // for (let ix = 0; ix < this.model.prog.length; ix++) {
-        //   let rec = this.model.prog[ix];
-        //   let recSave = this.tmpRules.prog[ix];
-        //   let ts = this.getNumFromData(new Date(rec.oraOn));
-        //   let te = this.getNumFromData(new Date(rec.oraOff));
-        //   rec.timeStart = ts;
-        //   rec.timeEnd = te;
-        //   change =
-        //     change ||
-        //     rec.minLight != recSave.minLight ||
-        //     rec.minTemp != recSave.minTemp ||
-        //     rec.timeStart != recSave.timeStart ||
-        //     rec.timeEnd != recSave.timeEnd ||
-        //     rec.priorityDisp != recSave.priorityDisp;
-        // }
-      }
       if (change) {
         console.log("Check for changes ..");
         this.$emit("updateRules", this.model);
         this.tmpRules = JSON.parse(JSON.stringify(this.model));
       } else console.log("No changes found ..");
+    },
+    getRule() {
+      // get rule from message or form id
+
+      const httpService = new HttpMonitor();
+      if (!this.checkNullInputData() && this.rule === null) {
+        httpService
+          .getMessageRuleById(this.ruleId, this.messageId)
+          .then((response) => {
+            var data = response.data;
+            let esito = data.error;
+            if (esito.code === 0) {
+              if (data.data.length > 0) {
+                this.rule = data.data[0];
+                this.savedRule = JSON.parse(JSON.stringify(this.rule));
+              } else this.confermaNuovaRegola();
+            } else {
+              showMsgErroreEsecuzione(this, esito, "getMessageRuleById");
+            }
+          })
+          .catch((error) => {
+            showMsgErroreEsecuzione(this, error, "getMessageRuleById");
+          });
+      }
     },
     resetConfiguration() {
       let cfg = getConfiguration();
@@ -157,37 +252,23 @@ export default {
       }
       this.attrTypeOptions = o;
       this.attrTypeProp = p;
-      this.tmpRules = JSON.parse(JSON.stringify(this.model));
+      //this.tmpRules = JSON.parse(JSON.stringify(this.model));
     },
     updateButton() {
-      // if (typeof this.model != "undefined" && this.model != null)
-      //   for (let ix = 0; ix < this.model.length; ix++) {
-      //     this.model.ix = ix;
-      //     // let rec = this.model.prog[ix];
-      //     // rec.up = ix === 0;
-      //     // rec.down = ix === this.model.prog.length - 1;
-      //   }
+      if (this.rule != null && this.rule.rules) {
+        for (let ix = 0; ix < this.rule.rules.length; ix++) {
+          this.rule.rules[ix].ix = ix;
+        }
+      }
     },
     manageButton(action, ix) {
       console.log("Button : " + action);
       console.log("Button : " + ix);
       let out = [];
       if (action === "addB" || action === "deleteB") {
-        // add
-        for (let i = 0; i < this.model.prog.length; i++) {
-          if (i === ix) {
-            if (action === "addB") {
-              out.push(this.model.prog[i]);
-              out.push(JSON.parse(JSON.stringify(this.model.prog[i])));
-            }
-          } else out.push(this.model.prog[i]);
-        }
-        this.model.prog = out;
+        //
       }
-      // rebuild index
-      for (let i = 0; i < this.model.prog.length; i++)
-        this.model.prog[i].ix = i;
-      this.checkField();
+      this.updateButton();
     },
   },
 };

@@ -149,7 +149,7 @@ export default {
       notFilteredMessageHeaderLabel: "",
       itemsSampleMessages: [],
       fieldsSampleMessages: [],
-      sampleMessageHeaderLabel: "",
+      sampleMessagesHeaderLabel: "",
       visibleMessage: false,
       messageType: "SMS",
       messageTypeOptions: [

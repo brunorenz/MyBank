@@ -164,6 +164,16 @@ export default class HttpMonitor {
     });
   }
 
+  getMessageRuleById(idRule, idMessage) {
+    var queryParams = [];
+    if (typeof idRule != "undefined" && idRule != null)
+      queryParams.push({ key: "idRule", value: idRule });
+    else if (typeof idMessage != "undefined" && idMessage != null)
+      queryParams.push({ key: "idMessage", value: idMessage });
+    return axios.get(this.getUrl(GET_RULES, queryParams), {
+      headers: this.getSecurityHeader(),
+    });
+  }
   getMessageRule(type, key, key2) {
     var queryParams = [{ key: "type", value: type }];
     if (typeof key != "undefined") {
