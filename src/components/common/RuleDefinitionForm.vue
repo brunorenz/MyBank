@@ -2,14 +2,14 @@
   <div v-if="rule != null">
     <b-row>
       <b-col sm="3">
-        <label class="font-weight-bold">{{
+        <label class="font-weight-bold">
+          {{
           rule.type === "SMS" ? "Orgine SMS" : "Nome pacchetto messaggio PUSH"
-        }}</label>
+          }}
+        </label>
       </b-col>
       <b-col sm="6">
-        <label>
-          {{ rule.key }}
-        </label>
+        <label>{{ rule.key }}</label>
       </b-col>
     </b-row>
     <b-row v-if="rule.type === 'PUSH'">
@@ -17,9 +17,7 @@
         <label class="font-weight-bold">Identificativo</label>
       </b-col>
       <b-col sm="6">
-        <label>
-          {{ rule.key2 }}
-        </label>
+        <label>{{ rule.key2 }}</label>
       </b-col>
     </b-row>
     <b-row v-if="typeof message != 'undefined'">
@@ -27,9 +25,7 @@
         <label class="font-weight-bold">Messaggio</label>
       </b-col>
       <b-col>
-        <label>
-          {{ message.message }}
-        </label>
+        <label>{{ message.message }}</label>
       </b-col>
     </b-row>
 
@@ -37,11 +33,7 @@
       <b-row>
         <b-col sm="2">
           <b-row class="text-center">
-            <b-button
-              class="my-1"
-              variant="primary"
-              @click="manageButton('deleteB', entry.ix)"
-            >
+            <b-button class="my-1" variant="primary" @click="manageButton('deleteB', entry.ix)">
               <b-icon icon="trash"></b-icon>
             </b-button>
             <b-button
@@ -57,27 +49,17 @@
         <b-col>
           <b-row>
             <b-form-group label="Tipo attributo" class="col-sm-3">
-              <b-form-select
-                v-model="entry.key"
-                :options="attrTypeOptions"
-                @change="checkField"
-              ></b-form-select>
+              <b-form-select v-model="entry.key" :options="attrTypeOptions" @change="checkField"></b-form-select>
             </b-form-group>
             <b-form-group label="Obbligatorio" class="col-sm-3">
-              <b-form-checkbox
-                v-model="entry.mandatory"
-                @change="checkField"
-              ></b-form-checkbox>
+              <b-form-checkbox v-model="entry.mandatory" @change="checkField"></b-form-checkbox>
             </b-form-group>
             <b-form-group
               label="Regola EXIST"
               class="col-sm-3"
               v-if="attrTypeProp[entry.key].exist === true"
             >
-              <b-input
-                v-model="entry.rule.exist"
-                @change="checkField"
-              ></b-input>
+              <b-input v-model="entry.rule.exist" @change="checkField"></b-input>
             </b-form-group>
             <b-form-group
               label="Testo che precede"
@@ -95,20 +77,14 @@
               class="col-sm-3"
               v-if="attrTypeProp[entry.key].exist === false"
             >
-              <b-input
-                v-model="entry.rule.after"
-                @change="checkField"
-              ></b-input>
+              <b-input v-model="entry.rule.after" @change="checkField"></b-input>
             </b-form-group>
             <b-form-group
               label="Valido se esiste"
               class="col-sm-3"
               v-if="attrTypeProp[entry.key].exist === false"
             >
-              <b-input
-                v-model="entry.rule.ifexist"
-                @change="checkField"
-              ></b-input>
+              <b-input v-model="entry.rule.ifexist" @change="checkField"></b-input>
             </b-form-group>
           </b-row>
         </b-col>
@@ -121,63 +97,55 @@
         @click="updateRule(true)"
         class="ml-2"
         :disabled="!anyChange && !newRule"
-        >{{ displayAdd }}</b-button
-      >
+      >{{ displayAdd }}</b-button>
       <b-button
         v-if="typeof message != 'undefined'"
         class="ml-2"
         variant="success"
         @click="testRule"
-      >
-        Simula Regola
-      </b-button>
+      >Simula Regola</b-button>
       <b-button
         class="ml-2"
         variant="danger"
         @click="deleteRule(true)"
         :disabled="newRule"
-        >Elimina Regola</b-button
-      >
+      >Elimina Regola</b-button>
     </b-row>
-    <b-modal
-      v-model="showModalTestRule"
-      id="modalTestRule"
-      title="Esito Simulazione Regola"
-      ><div>
+    <b-modal v-model="showModalAddRule" id="modalAddRule" title="Selezione Tipo Regola" @ok="addNewRule">
+      <b-form-group label="Tipo Regola" class="col-sm-6">
+        <b-form-radio-group id="messageTypeId" v-model="ruleType" :options="ruleTypeOptions"></b-form-radio-group>
+      </b-form-group>
+    </b-modal>
+    <b-modal v-model="showModalTestRule" id="modalTestRule" title="Esito Simulazione Regola">
+      <div>
         <b-row>
-          <b-col sm="6">Accettata</b-col
-          ><b-col sm="6"
-            ><strong> {{ esitoTestRegola.accepted }}</strong>
-          </b-col></b-row
-        >
+          <b-col sm="6">Accettata</b-col>
+          <b-col sm="6">
+            <strong>{{ esitoTestRegola.accepted }}</strong>
+          </b-col>
+        </b-row>
         <b-row>
-          <b-col sm="6">Banca</b-col
-          ><b-col sm="6"
-            ><strong> {{ esitoTestRegola.bankId }}</strong>
-          </b-col></b-row
-        >
-        <b-row v-if="ruleByKey['DATA'] != 'undefined'">
-          <b-col sm="6">Data</b-col
-          ><b-col sm="6"
-            ><strong> {{ esitoTestRegola.data }}</strong>
-          </b-col></b-row
-        >
-        <b-row v-if="ruleByKey['IMPORTO'] != 'undefined'">
-          <b-col sm="6">Importo</b-col
-          ><b-col sm="6"
-            ><strong> {{ esitoTestRegola.importo }}</strong>
-          </b-col></b-row
-        >
+          <b-col sm="6">Banca</b-col>
+          <b-col sm="6">
+            <strong>{{ esitoTestRegola.bankId }}</strong>
+          </b-col>
+        </b-row>
+        <b-row v-if="ruleByKey['DATA'] != null">
+          <b-col sm="6">Data</b-col>
+          <b-col sm="6">
+            <strong>{{ esitoTestRegola.data }}</strong>
+          </b-col>
+        </b-row>
+        <b-row v-if="ruleByKey['IMPORTO'] != null">
+          <b-col sm="6">Importo</b-col>
+          <b-col sm="6">
+            <strong>{{ esitoTestRegola.importo }}</strong>
+          </b-col>
+        </b-row>
       </div>
       <template v-slot:modal-footer>
-        <div class="w-100">
-          <b-button
-            variant="primary"
-            class="float-right"
-            @click="showModalTestRule = false"
-          >
-            Chiudi
-          </b-button>
+        <div>
+          <b-button variant="primary" class="float-right" @click="showModalTestRule = false">Chiudi</b-button>
         </div>
       </template>
     </b-modal>
@@ -195,7 +163,7 @@ import {
 export default {
   name: "RuleDefinitionForm",
   props: ["ruleId", "message"],
-  data: function() {
+  data: function () {
     return {
       rule: null,
       ruleByKey: {},
@@ -207,37 +175,47 @@ export default {
       newRule: false,
       showModalTestRule: false,
       esitoTestRegola: {},
+      showModalAddRule: false,
+      ruleType: "base",      
+      ruleTypeOptions: [
+        { text: "Regala base", value: "base" },
+        { text: "Regola exist", value: "exist" },
+      ],
     };
   },
   computed: {
-    rulen: function() {
+    rulen: function () {
       console.log("Process ruleId : " + this.ruleId);
       console.log("Process message : " + this.message);
       return this.rule;
     },
-    displayAdd: function() {
+    displayAdd: function () {
       return this.newRule ? "Aggiungi Regola" : "Aggiorna Regola";
     },
   },
-  beforeMount: function() {
+  beforeMount: function () {
     console.log(">>>> RuleDefinitionForm : beforeMount");
-    this.resetConfiguration();
+    this.createConfigurationData();
   },
-  mounted: function() {
+  mounted: function () {
     console.log(">>>> RuleDefinitionForm : mounted");
     this.getRule();
-    this.updateButton();
+    this.updateFormData();
   },
-  beforeUpdate: function() {
+  beforeUpdate: function () {
     console.log(">>>> RuleDefinitionForm : beforeUpdate");
-    this.updateButton();
+    //this.updateButton();
   },
   methods: {
-    updateRuleByKey() {
-      let r = {};
-      for (let ix = 0; ix < this.rule.rules.length; ix++)
-        r[this.rule.rules[ix].key] = this.rule.rules[ix];
-      this.ruleByKey = r;
+    // updateRuleByKey() {
+    //   let r = {};
+    //   for (let ix = 0; ix < this.rule.rules.length; ix++)
+    //     r[this.rule.rules[ix].key] = this.rule.rules[ix];
+    //   this.ruleByKey = r;
+    // },
+    displayTest(key) {
+      let dis = this.ruleByKey[key] != null;
+      return dis;
     },
     annulla(confirm) {
       // check any changes ?
@@ -268,7 +246,7 @@ export default {
       if (this.message.type === "SMS") rule.key2 = this.message.sender;
       this.rule = rule;
       this.savedRule = JSON.parse(JSON.stringify(this.rule));
-      this.updateRuleByKey();
+      this.updateFormData();
     },
     checkNullInputData() {
       let nullData =
@@ -315,7 +293,6 @@ export default {
           let esito = data.error;
           this.esitoTestRegola = data.data;
           this.showModalTestRule = true;
-          //showMsgErroreEsecuzione(this, esito, "testMessageRule");
         })
         .catch((error) => {
           showMsgErroreEsecuzione(this, error, "testMessageRule");
@@ -345,7 +322,7 @@ export default {
           });
       }
     },
-    resetConfiguration() {
+    createConfigurationData() {
       let cfg = getConfiguration();
       this.ruleDefinitions = cfg.ruleDefinitions;
       let o = [];
@@ -364,14 +341,21 @@ export default {
       }
       this.attrTypeOptions = o;
       this.attrTypeProp = p;
-      //this.tmpRules = JSON.parse(JSON.stringify(this.model));
     },
-    updateButton() {
-      console.log("Update Button ..");
-      if (this.rule != null && this.rule.rules) {
-        for (let ix = 0; ix < this.rule.rules.length; ix++) {
-          this.rule.rules[ix].ix = ix;
+    updateFormData() {
+      console.log("Update updateFromData ..");
+      // create buttun index
+      if (typeof this.rule != "undefined" && this.rule != null) {
+        if (this.rule != null && this.rule.rules) {
+          for (let ix = 0; ix < this.rule.rules.length; ix++) {
+            this.rule.rules[ix].ix = ix;
+          }
         }
+        // create test modal strutture
+        let r = {};
+        for (let ix = 0; ix < this.rule.rules.length; ix++)
+          r[this.rule.rules[ix].key] = this.rule.rules[ix];
+        this.ruleByKey = r;
       }
     },
     manageButton(action, ix) {
@@ -380,10 +364,11 @@ export default {
       let out = [];
       if (action === "addB") {
         //
+        this.showModalAddRule = true;
       } else if (action === "deleteB") {
         //
       }
-      this.updateButton();
+      this.updateFormData();
     },
   },
 };
