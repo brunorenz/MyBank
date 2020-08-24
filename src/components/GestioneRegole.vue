@@ -1,49 +1,47 @@
 <template>
   <div class="app">
-    <b-card :header="rulesHeaderLabel" v-if="fromMessaggi === false">
-      <b-row class="ml-0">
-        <b-form-group label="Tipo messaggio" class="col-sm-3">
-          <b-form-radio-group
-            id="messageTypeId"
-            v-model="messageType"
-            :options="messageTypeOptions"
-            @input="changeType"
-          ></b-form-radio-group>
-        </b-form-group>
-      </b-row>
+    <b-collapse v-model="ruleListShow">
+      <b-card :header="rulesHeaderLabel">
+        <b-row class="ml-0">
+          <b-form-group label="Tipo messaggio" class="col-sm-3">
+            <b-form-radio-group
+              id="messageTypeId"
+              v-model="messageType"
+              :options="messageTypeOptions"
+              @input="changeType"
+            ></b-form-radio-group>
+          </b-form-group>
+        </b-row>
 
-      <b-table
-        ref="rules"
-        selectable
-        select-mode="single"
-        :items="rulesItems"
-        :fields="rulesFields"
-        selected-variant="primary"
-        @row-selected="onRulesRowSelected"
-        responsive="sm"
-        sort-icon-left
-        head-variant="light"
-        striped
-        small
-        bordered
-        sticky-header
-        :busy="isRulesBusy"
-      >
-        <template v-slot:table-busy>
-          <div class="text-center text-danger my-2">
-            <b-spinner class="align-middle"></b-spinner>
-            <strong>Loading...</strong>
-          </div>
-        </template>
-      </b-table>
-      <b-row class="ml-0">
-        <b-button variant="primary" @click="addRule">Aggiungi regola</b-button>
-      </b-row>
-    </b-card>
-
-    <b-card header="Dettaglio" v-if="ruleDetailShow">
+        <b-table
+          ref="rules"
+          selectable
+          select-mode="single"
+          :items="rulesItems"
+          :fields="rulesFields"
+          selected-variant="primary"
+          @row-selected="onRulesRowSelected"
+          responsive="sm"
+          sort-icon-left
+          head-variant="light"
+          striped
+          small
+          bordered
+          sticky-header
+          :busy="isRulesBusy"
+        >
+          <template v-slot:table-busy>
+            <div class="text-center text-danger my-2">
+              <b-spinner class="align-middle"></b-spinner>
+              <strong>Loading...</strong>
+            </div>
+          </template>
+        </b-table>
+      </b-card>
+    </b-collapse>
+    <b-card :header="headerDetail" v-if="ruleDetailShow">
       <ruleDefinition
-        :ruleId="ruleSelected._id"
+        :ruleId="ruleSelectedId"
         v-on:updateRules="updateRules"
       ></ruleDefinition>
     </b-card>
@@ -70,6 +68,7 @@ export default {
       rulesItems: [],
       rulesSelected: [],
       rulesHeaderLabel: "",
+      ruleListShow: true,
       ruleDetailShow: false,
       messageType: "SMS",
       messageTypeOptions: [
@@ -77,32 +76,37 @@ export default {
         { text: "PUSH", value: "PUSH" },
       ],
       isRulesBusy: false,
-      ruleSelected: null,
-      fromMessaggi: false,
+      ruleSelectedId: null,
       messageId: null,
     };
   },
   mounted: function() {
     this.getRules();
   },
-  beforeUpdate: function() {
-    if (typeof this.$route.query.id != "undefined") {
-      // search message rules
-      this.fromMessaggi = true;
-      this.messageId = this.$route.query.id;
-      this.ruleDetailShow = true;
-    }
+  computed: {
+    headerDetail: function() {
+      let msg =
+        "Dettaglio regola per " +
+        (this.messageType === "SMS" ? "messaggio SMS" : "notifica PUSH");
+
+      return msg;
+    },
   },
+  beforeUpdate: function() {},
   methods: {
     changeType(name) {
-      this.ruleDetailShow = false;
       this.reloadAndClear();
     },
     updateRules() {
-      console.log("Update rules from FOMR !!");
+      console.log("Update rules from FROM !!");
+      this.deselectRules();
     },
-    addRule() {
-      console.log("Add rule !!");
+    // addRule() {
+    //   console.log("Add rule !!");
+    // },
+    reloadAndClear() {
+      this.deselectRules();
+      this.getRules();
     },
     updateRule(confirm) {
       if (typeof confirm != "undefined")
@@ -133,47 +137,16 @@ export default {
         this.addMessage
       );
     },
-    addMessage() {
-      let entry = { type: this.messageType };
-      if (this.messageType === "SMS")
-        entry.sender = this.receivedMessageSelected[0].key;
-      else entry.packageName = this.receivedMessageSelected[0].key;
-      console.log("add record " + entry);
-      const httpService = new HttpMonitor();
-      httpService
-        .addMessageFilter(entry)
-        .then((response) => {
-          this.reloadAndClear();
-        })
-        .catch((error) => {
-          console.log("Error callig service 'addMessageFilter' : " + error);
-        });
-    },
-    deleteMessage() {
-      const httpService = new HttpMonitor();
-      let record = this.selected[0];
-      httpService
-        .deleteMessageFilter(record)
-        .then((response) => {
-          this.reloadAndClear();
-        })
-        .catch((error) => {
-          console.log("Error callig service 'deleteMessageFilter' : " + error);
-        });
-    },
-    reloadAndClear() {
-      this.deselectRules();
-      this.getRules();
-    },
-
     onRulesRowSelected(items) {
       this.rulesSelected = items;
       if (items.length === 0) {
         this.ruleDetailShow = false;
-        this.ruleSelected = null;
+        this.ruleListShow = true;
+        this.ruleSelectedId = null;
       } else {
-        this.ruleSelected = items[0];
+        this.ruleSelectedId = items[0]._id;
         this.ruleDetailShow = true;
+        this.ruleListShow = false;
       }
     },
     deselectRules() {
@@ -186,45 +159,7 @@ export default {
         this.processSelectedMessages
       );
     },
-    processSelectedMessages() {
-      let msgIds = [];
-      for (let ix = 0; ix < this.sampleMessagesSelected.length; ix++) {
-        msgIds.push(this.sampleMessagesSelected[ix]["_id"]);
-      }
-      const httpService = new HttpMonitor();
-      httpService
-        .analizeMessages({ msgIds: msgIds })
-        .then((response) => {
-          var data = response.data;
-          let esito = data.error;
-          if (esito.code === 0) {
-            let msgs = data.data;
-            let accepted = 0;
-            let notAccepted = 0;
-            let notFound = 0;
-            for (let ix = 0; ix < msgs.length; ix++) {
-              accepted += msgs[ix].accepted ? 1 : 0;
-              notFound += msgs[ix].found ? 0 : 1;
-              notAccepted += msgs[ix].accepted ? 0 : 1;
-            }
-            console.log(
-              "Not found : " +
-                notFound +
-                " - Accepted " +
-                accepted +
-                " - Not accepted " +
-                notAccepted
-            );
-            showMsgEsitoEsecuzione(
-              this,
-              `Non trovati : ${notFound} - Accettati : ${accepted} - Non accettati : ${notAccepted}`
-            );
-          } else showMsgErroreEsecuzione(this, esito, "analizeMessages");
-        })
-        .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "analizeMessages");
-        });
-    },
+
     getRules() {
       this.isRulesBusy = true;
       let isSMS = this.messageType === "SMS";
@@ -266,57 +201,6 @@ export default {
         .catch((error) => {
           showMsgErroreEsecuzione(this, error, "getMessageRule");
           this.isRulesBusy = false;
-        });
-    },
-    listMessages() {
-      let isSMS = this.messageType === "SMS";
-      this.isSampleMessagesBusy = true;
-      const httpService = new HttpMonitor();
-      this.sampleMessagesHeaderLabel =
-        (isSMS
-          ? "Dettaglio messaggi SMS ricevuti da "
-          : "Dettaglio notifiche PUSH ricevute da ") +
-        this.receivedMessageSelected[0].key;
-      this.sampleMessagesFields = [
-        { key: "date", label: "Data", sortable: true },
-      ];
-      if (!isSMS)
-        this.sampleMessagesFields.push({
-          key: "sender",
-          label: "Origine",
-          sortable: true,
-        });
-      this.sampleMessagesFields.push({
-        key: "message",
-        label: "Messaggio",
-        sortable: true,
-      });
-      httpService
-        .listMessages(this.messageType, this.receivedMessageSelected[0].key)
-        .then((response) => {
-          var data = response.data;
-          let esito = data.error;
-          if (esito.code === 0) {
-            let dati = data.data;
-            var datiServers = [];
-            for (var i = 0; i < dati.length; i++) {
-              let entry = {
-                date: this.$moment(new Date(dati[i].time)).format(
-                  "DD/MM/YY HH:MM"
-                ),
-                _id: dati[i]._id,
-              };
-              if (!isSMS) entry.sender = dati[i].sender;
-              entry.message = dati[i].message;
-              datiServers.push(entry);
-            }
-            this.sampleMessagesItems = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "listMessages");
-          this.isSampleMessagesBusy = false;
-        })
-        .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "listMessages");
-          this.isSampleMessagesBusy = false;
         });
     },
   },

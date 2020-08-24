@@ -16,8 +16,9 @@ const LIST_MESSAGES = "listMessages";
 const ANALIZE_MESSAGES = "analizeMessages";
 const LIST_MOVEMENTS = "listAccountMovements";
 const GET_RULES = "getMessageRule";
-const DELETE_RULES = "deleteMessageRule";
-const UPDATE_RULES = "updatemessageRule";
+const DELETE_RULE = "deleteMessageRule";
+const UPDATE_RULE = "updateMessageRule";
+const TEST_RULE = "testMessageRule";
 //
 
 const LOGIN = "login";
@@ -153,6 +154,16 @@ export default class HttpMonitor {
     });
   }
 
+  testMessageRule(rule, message) {
+    let url = this.getUrl(TEST_RULE);
+    let input = {
+      rule: rule,
+      message: message,
+    };
+    return axios.post(url, JSON.stringify(input), {
+      headers: this.getPostJsonSecurityHeader(),
+    });
+  }
   /**
    * get account movements
    * @param {*} filter

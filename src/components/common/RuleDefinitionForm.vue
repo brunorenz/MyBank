@@ -1,22 +1,34 @@
 <template>
   <div v-if="rule != null">
     <b-row>
-      <b-col sm="2">
+      <b-col sm="3">
         <label class="font-weight-bold">{{
-          rule.type === "SMS" ? "Orgine" : "Nome"
+          rule.type === "SMS" ? "Orgine SMS" : "Nome pacchetto messaggio PUSH"
         }}</label>
       </b-col>
-      <b-col sm="4">
+      <b-col sm="6">
         <label>
           {{ rule.key }}
         </label>
       </b-col>
-      <b-col sm="2" v-if="rule.type === 'PUSH'">
+    </b-row>
+    <b-row v-if="rule.type === 'PUSH'">
+      <b-col sm="3">
         <label class="font-weight-bold">Identificativo</label>
       </b-col>
-      <b-col sm="4" v-if="rule.type === 'PUSH'">
+      <b-col sm="6">
         <label>
           {{ rule.key2 }}
+        </label>
+      </b-col>
+    </b-row>
+    <b-row v-if="typeof message != 'undefined'">
+      <b-col sm="3">
+        <label class="font-weight-bold">Messaggio</label>
+      </b-col>
+      <b-col>
+        <label>
+          {{ message.message }}
         </label>
       </b-col>
     </b-row>
@@ -75,6 +87,7 @@
               <b-input
                 v-model="entry.rule.before"
                 @change="checkField"
+                @update="updateField(entry.ix)"
               ></b-input>
             </b-form-group>
             <b-form-group
@@ -103,18 +116,74 @@
     </b-card>
     <b-row class="ml-0">
       <b-button variant="primary" @click="annulla">Annulla</b-button>
-      <b-button variant="primary" @click="updateRule(true)" class="ml-2"
-        >Aggiungi regola</b-button
+      <b-button
+        variant="primary"
+        @click="updateRule(true)"
+        class="ml-2"
+        :disabled="!anyChange && !newRule"
+        >{{ displayAdd }}</b-button
       >
-      <b-button variant="primary" @click="updateRule(true)" class="ml-2"
-        >Modifica regola</b-button
+      <b-button
+        v-if="typeof message != 'undefined'"
+        class="ml-2"
+        variant="success"
+        @click="testRule"
       >
-      <b-button class="ml-2" variant="danger" @click="deleteRule(true)"
-        >Elimina regola</b-button
+        Simula Regola
+      </b-button>
+      <b-button
+        class="ml-2"
+        variant="danger"
+        @click="deleteRule(true)"
+        :disabled="newRule"
+        >Elimina Regola</b-button
       >
     </b-row>
+    <b-modal
+      v-model="showModalTestRule"
+      id="modalTestRule"
+      title="Esito Simulazione Regola"
+      ><div>
+        <b-row>
+          <b-col sm="6">Accettata</b-col
+          ><b-col sm="6"
+            ><strong> {{ esitoTestRegola.accepted }}</strong>
+          </b-col></b-row
+        >
+        <b-row>
+          <b-col sm="6">Banca</b-col
+          ><b-col sm="6"
+            ><strong> {{ esitoTestRegola.bankId }}</strong>
+          </b-col></b-row
+        >
+        <b-row v-if="ruleByKey['DATA'] != 'undefined'">
+          <b-col sm="6">Data</b-col
+          ><b-col sm="6"
+            ><strong> {{ esitoTestRegola.data }}</strong>
+          </b-col></b-row
+        >
+        <b-row v-if="ruleByKey['IMPORTO'] != 'undefined'">
+          <b-col sm="6">Importo</b-col
+          ><b-col sm="6"
+            ><strong> {{ esitoTestRegola.importo }}</strong>
+          </b-col></b-row
+        >
+      </div>
+      <template v-slot:modal-footer>
+        <div class="w-100">
+          <b-button
+            variant="primary"
+            class="float-right"
+            @click="showModalTestRule = false"
+          >
+            Chiudi
+          </b-button>
+        </div>
+      </template>
+    </b-modal>
   </div>
 </template>
+
 <script>
 import { getConfiguration } from "@/services/config";
 import HttpMonitor from "@/services/httpMonitorRest";
@@ -129,14 +198,27 @@ export default {
   data: function() {
     return {
       rule: null,
+      ruleByKey: {},
       savedRule: {},
       attrTypeOptions: [],
       attrTypeProp: {},
       messageId: null,
+      anyChange: false,
+      newRule: false,
+      showModalTestRule: false,
+      esitoTestRegola: {},
     };
   },
-
-  computed: {},
+  computed: {
+    rulen: function() {
+      console.log("Process ruleId : " + this.ruleId);
+      console.log("Process message : " + this.message);
+      return this.rule;
+    },
+    displayAdd: function() {
+      return this.newRule ? "Aggiungi Regola" : "Aggiorna Regola";
+    },
+  },
   beforeMount: function() {
     console.log(">>>> RuleDefinitionForm : beforeMount");
     this.resetConfiguration();
@@ -148,17 +230,30 @@ export default {
   },
   beforeUpdate: function() {
     console.log(">>>> RuleDefinitionForm : beforeUpdate");
-    this.getRule();
     this.updateButton();
   },
   methods: {
-    isVisible(key) {
-      return true;
+    updateRuleByKey() {
+      let r = {};
+      for (let ix = 0; ix < this.rule.rules.length; ix++)
+        r[this.rule.rules[ix].key] = this.rule.rules[ix];
+      this.ruleByKey = r;
     },
-    annulla() {
-      this.$emit("updateRules");
+    annulla(confirm) {
+      // check any changes ?
+      if (typeof confirm != "undefined") {
+        let r = JSON.stringify(this.rule);
+        let r1 = JSON.stringify(this.savedRule);
+        if (r != r1) {
+          showConfirmationMessage(
+            this,
+            "Confermi l'annullamento delle modifiche apportate ?",
+            this.annulla
+          );
+        } else this.$emit("updateRules");
+      } else this.$emit("updateRules");
     },
-    addNewRule() {
+    addNewRule(type) {
       let rule = {
         rules: [{ key: "DATA", rule: {} }],
         bankId: null,
@@ -168,9 +263,12 @@ export default {
             ? this.message.sender
             : this.message.packageName,
       };
+      if (typeof type != "undefined" && type === "exist")
+        rule.rules[0].exist = "Exist Rule";
       if (this.message.type === "SMS") rule.key2 = this.message.sender;
       this.rule = rule;
       this.savedRule = JSON.parse(JSON.stringify(this.rule));
+      this.updateRuleByKey();
     },
     checkNullInputData() {
       let nullData =
@@ -193,6 +291,7 @@ export default {
         .then((value) => {
           if (value) {
             this.addNewRule();
+            this.newRule = true;
           } else {
             this.annulla();
           }
@@ -201,19 +300,32 @@ export default {
           console.error("Errore in display msgbox : " + err);
         });
     },
+    updateField(event) {
+      this.anyChange = true;
+    },
     checkField(event) {
-      let change = false;
-      if (change) {
-        console.log("Check for changes ..");
-        this.$emit("updateRules", this.model);
-        this.tmpRules = JSON.parse(JSON.stringify(this.model));
-      } else console.log("No changes found ..");
+      this.anyChange = true;
+    },
+    testRule() {
+      const httpService = new HttpMonitor();
+      httpService
+        .testMessageRule(this.rule, this.message)
+        .then((response) => {
+          var data = response.data;
+          let esito = data.error;
+          this.esitoTestRegola = data.data;
+          this.showModalTestRule = true;
+          //showMsgErroreEsecuzione(this, esito, "testMessageRule");
+        })
+        .catch((error) => {
+          showMsgErroreEsecuzione(this, error, "testMessageRule");
+        });
     },
     getRule() {
       // get rule from message or form id
 
       const httpService = new HttpMonitor();
-      if (!this.checkNullInputData() && this.rule === null) {
+      if (!this.checkNullInputData()) {
         httpService
           .getMessageRuleById(this.ruleId, this.messageId)
           .then((response) => {
@@ -255,6 +367,7 @@ export default {
       //this.tmpRules = JSON.parse(JSON.stringify(this.model));
     },
     updateButton() {
+      console.log("Update Button ..");
       if (this.rule != null && this.rule.rules) {
         for (let ix = 0; ix < this.rule.rules.length; ix++) {
           this.rule.rules[ix].ix = ix;
@@ -265,7 +378,9 @@ export default {
       console.log("Button : " + action);
       console.log("Button : " + ix);
       let out = [];
-      if (action === "addB" || action === "deleteB") {
+      if (action === "addB") {
+        //
+      } else if (action === "deleteB") {
         //
       }
       this.updateButton();
