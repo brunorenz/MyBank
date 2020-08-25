@@ -18,7 +18,9 @@ const LIST_MOVEMENTS = "listAccountMovements";
 const GET_RULES = "getMessageRule";
 const DELETE_RULE = "deleteMessageRule";
 const UPDATE_RULE = "updateMessageRule";
+const ADD_RULE = "addMessageRule";
 const TEST_RULE = "testMessageRule";
+const GET_ACCOUNTS = "getAccounts";
 //
 
 const LOGIN = "login";
@@ -150,6 +152,21 @@ export default class HttpMonitor {
   analizeMessages(msgIds) {
     let url = this.getUrl(ANALIZE_MESSAGES);
     return axios.post(url, JSON.stringify(msgIds), {
+      headers: this.getPostJsonSecurityHeader(),
+    });
+  }
+
+  getAccounts() {
+    var queryParams = [];
+    return axios.get(this.getUrl(GET_ACCOUNTS, queryParams), {
+      headers: this.getSecurityHeader(),
+    });
+  }
+  updateMessageRule(rule) {
+    let url = this.getUrl(
+      typeof rule._id === "undefined" ? ADD_RULE : UPDATE_RULE
+    );
+    return axios.post(url, JSON.stringify(rule), {
       headers: this.getPostJsonSecurityHeader(),
     });
   }

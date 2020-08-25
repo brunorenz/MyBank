@@ -118,7 +118,7 @@
         </b-row>
       </b-card>
     </b-collapse>
-    <b-card header="Dettaglio" v-if="ruleShow === true">
+    <b-card :header="headerDetail" v-if="ruleShow === true">
       <ruleDefinition
         :message="selectedMessage"
         v-on:updateRules="updateRules"
@@ -140,6 +140,15 @@ export default {
   name: "GestioneMessaggi",
   components: {
     ruleDefinition: RuleDefinitionForm,
+  },
+  computed: {
+    headerDetail: function() {
+      let msg =
+        "Dettaglio regola per " +
+        (this.messageType === "SMS" ? "messaggio SMS" : "notifica PUSH");
+
+      return msg;
+    },
   },
   data: function() {
     return {
