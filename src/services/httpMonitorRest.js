@@ -92,8 +92,16 @@ export default class HttpMonitor {
     }
     return headers;
   }
-  getUrl(functionUrl, queryParams) {
-    var outUrl = this.configuration.serverUrl + functionUrl;
+  getSecurityUrl(functionUrl, queryParams) {
+    return this.getUrl(
+      functionUrl,
+      queryParams,
+      this.configuration.urlSecurity
+    );
+  }
+  getUrl(functionUrl, queryParams, url) {
+    if (typeof url === "undefined") url = this.configuration.urlApp;
+    var outUrl = this.configuration.serverUrl + url + functionUrl;
     if (queryParams && queryParams.length > 0) {
       outUrl += "?";
       for (var index = 0; index < queryParams.length; index++)
@@ -116,7 +124,7 @@ export default class HttpMonitor {
       email: email,
       password: password,
     };
-    let url = this.getUrl(LOGIN);
+    let url = this.getSecurityUrl(LOGIN);
     return axios.post(url, "data=" + JSON.stringify(inputData), {
       headers: this.getPostSecurityHeader(false),
     });

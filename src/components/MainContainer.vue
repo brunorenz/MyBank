@@ -26,16 +26,14 @@
       <!-- <SidebarToggler mobile /> -->
       <b-navbar-nav class="d-md-down-none" v-if="logonStatus">
         <b-nav-item class="px-3" to="/dashboard">Dashboard</b-nav-item>
-        <b-nav-item-dropdown class="px-3" text="Gestione Filtri">
-          <b-dropdown-item to="/gestioneFiltri?type=PUSH">PUSH</b-dropdown-item>
-          <b-dropdown-item to="/gestioneFiltri?type=SMS">SMS</b-dropdown-item>
+        <b-nav-item-dropdown class="px-3" text="Configurazione">
+          <b-dropdown-item to="/gestioneFiltri">Filtri</b-dropdown-item>
+          <b-dropdown-item to="/gestioneMessaggi">Messaggi</b-dropdown-item>
+          <b-dropdown-item to="/gestioneRegole">Regole</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown class="px-3" text="Gestione Messaggi">
-          <b-dropdown-item to="/gestioneMessaggi?type=PUSH"
-            >PUSH</b-dropdown-item
-          >
-          <b-dropdown-item to="/gestioneMessaggi?type=SMS">SMS</b-dropdown-item>
-        </b-nav-item-dropdown>
+        <b-nav-item class="px-3" to="/gestioneMovimenti"
+          >Gestione Movimenti</b-nav-item
+        >
       </b-navbar-nav>
 
       <b-navbar-nav class="ml-auto">

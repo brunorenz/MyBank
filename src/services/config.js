@@ -2,14 +2,20 @@
 
 const local = true;
 const remoteNodeServer = true;
-const serverUrlP = "/mybank/rest/";
-const serverUrlR = "http://srvwas1.bpbari.it:8099/rest/";
+const urlApp = "mybank/rest/";
+const urlSecurity = "security/rest/";
+// const serverUrlP = "/mybank/rest/";
+// const serverUrlRemote = remoteNodeServer
+//   ? "https://mybank.65bruno.it/mybank/rest/"
+//   : "http://192.168.0.101:8102/mybank/rest/";
+// const serverUrlD = local
+//   ? "http://localhost:8102/mybank/rest/"
+//   : serverUrlRemote;
+const serverUrlP = "/";
 const serverUrlRemote = remoteNodeServer
-  ? "https://mybank.65bruno.it/mybank/rest/"
-  : "http://192.168.0.101:8102/mybank/rest/";
-const serverUrlD = local
-  ? "http://localhost:8102/mybank/rest/"
-  : serverUrlRemote;
+  ? "https://mybank.65bruno.it/"
+  : "http://192.168.0.101:8102/";
+const serverUrlD = local ? "http://localhost:8102/" : serverUrlRemote;
 
 const weatherUrl =
   "https://api.openweathermap.org/data/2.5/weather?lang=it&units=metric&APPID=2c5c4639e9d55c06402b4396433a5944";
@@ -57,6 +63,8 @@ const weatherUrl =
 
 let configuration = {
   serverUrl: process.env.NODE_ENV === "production" ? serverUrlP : serverUrlD,
+  urlApp: urlApp,
+  urlSecurity: urlSecurity,
   weatherMonitor: {
     weatherUrl: weatherUrl,
     id: 3182351,
