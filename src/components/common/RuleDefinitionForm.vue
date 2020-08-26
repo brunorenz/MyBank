@@ -22,7 +22,7 @@
     </b-row>
     <b-row>
       <b-col sm="3" class="mt-1">
-        <label class="font-weight-bold">Conto</label>
+        <label class="font-weight-bold">Conto Base</label>
       </b-col>
       <b-col sm="6">
         <b-form-select
@@ -66,15 +66,15 @@
           <b-row>
             <b-form-group label="Tipo attributo" class="col-sm-3">
               <b-form-select
-                v-if="attrTypeProp[entry.key].exist != true"
+                v-if="cfg.attrTypeProp[entry.key].exist != true"
                 v-model="entry.key"
-                :options="attrTypeOptions"
+                :options="cfg.attrTypeOptions"
                 @change="checkField('TIPO')"
               ></b-form-select>
               <b-form-select
                 v-else
                 v-model="entry.key"
-                :options="attrTypeOptionsExist"
+                :options="cfg.attrTypeOptionsExist"
                 @change="checkField('TIPO')"
               ></b-form-select>
             </b-form-group>
@@ -87,7 +87,7 @@
             <b-form-group
               label="Regola EXIST"
               class="col-sm-3"
-              v-if="attrTypeProp[entry.key].exist === true"
+              v-if="cfg.attrTypeProp[entry.key].exist === true"
             >
               <b-input
                 v-model="entry.rule.exist"
@@ -97,7 +97,7 @@
             <b-form-group
               label="Testo che precede"
               class="col-sm-3"
-              v-if="attrTypeProp[entry.key].exist === false"
+              v-if="cfg.attrTypeProp[entry.key].exist === false"
             >
               <b-input
                 v-model="entry.rule.before"
@@ -107,7 +107,7 @@
             <b-form-group
               label="Testo in coda"
               class="col-sm-3"
-              v-if="attrTypeProp[entry.key].exist === false"
+              v-if="cfg.attrTypeProp[entry.key].exist === false"
             >
               <b-input
                 v-model="entry.rule.after"
@@ -117,7 +117,7 @@
             <b-form-group
               label="Valido se esiste"
               class="col-sm-3"
-              v-if="attrTypeProp[entry.key].exist === false"
+              v-if="cfg.attrTypeProp[entry.key].exist === false"
             >
               <b-input
                 v-model="entry.rule.ifexist"
@@ -125,9 +125,19 @@
               ></b-input>
             </b-form-group>
             <b-form-group
+              label="Valore se non trovato"
+              class="col-sm-3"
+              v-if="cfg.attrTypeProp[entry.key].ifnull === true"
+            >
+              <b-input
+                v-model="entry.rule.ifnull"
+                @change="checkField()"
+              ></b-input>
+            </b-form-group>
+            <b-form-group
               label="Pattern"
               class="col-sm-3"
-              v-if="attrTypeProp[entry.key].pattern === true"
+              v-if="cfg.attrTypeProp[entry.key].pattern === true"
             >
               <b-input
                 v-model="entry.rule.pattern"
@@ -202,7 +212,7 @@
             <strong>{{ esitoTestRegola.bankId }}</strong>
           </b-col>
         </b-row>
-        <b-row v-for="attr in attrTypeOptions" :key="attr.value">
+        <b-row v-for="attr in cfg.attrTypeOptions" :key="attr.value">
           <b-col sm="6" v-if="ruleByKey[attr.value] != null">{{
             attr.valueLC
           }}</b-col>
@@ -210,7 +220,7 @@
             <strong>{{ esitoTestRegola[attr.valueLC] }}</strong>
           </b-col>
         </b-row>
-        <b-row v-for="attr in attrTypeOptionsExist" :key="attr.value">
+        <b-row v-for="attr in cfg.attrTypeOptionsExist" :key="attr.value">
           <b-col sm="6" v-if="ruleByKey[attr.value] != null">{{
             attr.valueLC
           }}</b-col>
@@ -234,7 +244,7 @@
 </template>
 
 <script>
-import { getConfiguration } from "@/services/config";
+//import { getConfiguration } from "@/services/config";
 import HttpMonitor from "@/services/httpMonitorRest";
 import {
   showMsgEsitoEsecuzione,
@@ -249,9 +259,7 @@ export default {
       rule: null,
       ruleByKey: {},
       savedRule: {},
-      attrTypeOptions: [],
-      attrTypeOptionsExist: [],
-      attrTypeProp: {},
+      cfg: {},
       messageId: null,
       anyChange: false,
       newRule: false,
@@ -279,8 +287,7 @@ export default {
   },
   beforeMount: function() {
     console.log(">>>> RuleDefinitionForm : beforeMount");
-    this.createConfigurationData();
-    this.getAccountOptions();
+    this.getMyBankConfiguration();
   },
   mounted: function() {
     console.log(">>>> RuleDefinitionForm : mounted");
@@ -310,8 +317,8 @@ export default {
         // valida rule
         for (let ix = 0; ix < this.rule.rules.length; ix++) {
           let r = this.rule.rules[ix];
-          if (typeof this.attrTypeProp[r.key].type != "undefined") {
-            this.rule.rules[ix].rule.type = this.attrTypeProp[r.key].type;
+          if (typeof this.cfg.attrTypeProp[r.key].type != "undefined") {
+            this.rule.rules[ix].rule.type = this.cfg.attrTypeProp[r.key].type;
           }
         }
         httpService
@@ -331,24 +338,53 @@ export default {
           });
       }
     },
-    getAccountOptions() {
+    getMyBankConfiguration() {
       const httpService = new HttpMonitor();
       httpService
-        .getAccounts()
+        .getMyBankConfiguration()
         .then((response) => {
+          let cfg = {};
           let a = [];
           var data = response.data;
           let esito = data.error;
           if (esito.code === 0) {
             let d = data.data;
-            for (let ix = 0; ix < d.length; ix++) {
+            for (let ix = 0; ix < d.accounts.length; ix++) {
               a.push({
-                value: d[ix].account,
-                text: d[ix].bankName + " - " + d[ix].description,
+                value: d.accounts[ix].account,
+                text:
+                  d.accounts[ix].bankName + " - " + d.accounts[ix].description,
               });
             }
+
+            this.accountOptions = a;
+            // manage rules
+            //let cfg = getConfiguration();
+            //this.ruleDefinitions = cfg.ruleDefinitions;
+            cfg.attrTypeOptions = [];
+            cfg.attrTypeOptionsExist = [];
+            cfg.attrTypeProp = {};
+            for (let ix = 0; ix < d.rulesDefinition.length; ix++) {
+              let r = d.rulesDefinition[ix];
+              let entry = {
+                value: r.key,
+                text: r.key,
+                valueLC: r.key.toLowerCase(),
+              };
+              if (r.exist) cfg.attrTypeOptionsExist.push(entry);
+              else cfg.attrTypeOptions.push(entry);
+              cfg.attrTypeProp[r.key] = {
+                exist: r.exist,
+                type: r.type,
+                pattern: r.pattern,
+                ifnull: typeof r.ifnull === "undefined" ? false : r.ifnull,
+              };
+            }
+            this.cfg = cfg;
+            //this.attrTypeOptionsExist = oe;
+            //this.attrTypeOptions = o;
+            //this.attrTypeProp = p;
           }
-          this.accountOptions = a;
         })
         .catch((error) => {
           showMsgErroreEsecuzione(this, error, "getAccounts");
@@ -475,31 +511,31 @@ export default {
           });
       }
     },
-    createConfigurationData() {
-      let cfg = getConfiguration();
-      this.ruleDefinitions = cfg.ruleDefinitions;
-      let o = [];
-      let oe = [];
-      let p = {};
-      for (let ix = 0; ix < cfg.ruleDefinitions.length; ix++) {
-        let r = cfg.ruleDefinitions[ix];
-        let entry = {
-          value: r.key,
-          text: r.key,
-          valueLC: r.key.toLowerCase(),
-        };
-        if (r.exist) oe.push(entry);
-        else o.push(entry);
-        p[r.key] = {
-          exist: r.exist,
-          type: r.type,
-          pattern: r.pattern,
-        };
-      }
-      this.attrTypeOptionsExist = oe;
-      this.attrTypeOptions = o;
-      this.attrTypeProp = p;
-    },
+    // createConfigurationData() {
+    //   let cfg = getConfiguration();
+    //   this.ruleDefinitions = cfg.ruleDefinitions;
+    //   let o = [];
+    //   let oe = [];
+    //   let p = {};
+    //   for (let ix = 0; ix < cfg.ruleDefinitions.length; ix++) {
+    //     let r = cfg.ruleDefinitions[ix];
+    //     let entry = {
+    //       value: r.key,
+    //       text: r.key,
+    //       valueLC: r.key.toLowerCase(),
+    //     };
+    //     if (r.exist) oe.push(entry);
+    //     else o.push(entry);
+    //     p[r.key] = {
+    //       exist: r.exist,
+    //       type: r.type,
+    //       pattern: r.pattern,
+    //     };
+    //   }
+    //   this.attrTypeOptionsExist = oe;
+    //   this.attrTypeOptions = o;
+    //   this.attrTypeProp = p;
+    // },
     updateFormData() {
       console.log("Update updateFromData ..");
       // create buttun index

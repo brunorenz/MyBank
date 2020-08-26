@@ -301,7 +301,7 @@ export default {
             for (var i = 0; i < dati.length; i++) {
               if (isSMS) {
                 let s = isNaN(dati[i]);
-                console.log("String : " + s + " -> " + dati[i]);
+                //console.log("String : " + s + " -> " + dati[i]);
                 if (s) datiServers.push({ key: dati[i] });
                 else if (!this.excludeNumber)
                   datiServers.push({ key: dati[i] });

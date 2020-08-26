@@ -20,7 +20,7 @@ const DELETE_RULE = "deleteMessageRule";
 const UPDATE_RULE = "updateMessageRule";
 const ADD_RULE = "addMessageRule";
 const TEST_RULE = "testMessageRule";
-const GET_ACCOUNTS = "getAccounts";
+const GET_CONFIGURATION = "getMyBankConfiguration";
 //
 
 const LOGIN = "login";
@@ -156,9 +156,9 @@ export default class HttpMonitor {
     });
   }
 
-  getAccounts() {
+  getMyBankConfiguration() {
     var queryParams = [];
-    return axios.get(this.getUrl(GET_ACCOUNTS, queryParams), {
+    return axios.get(this.getUrl(GET_CONFIGURATION, queryParams), {
       headers: this.getSecurityHeader(),
     });
   }
