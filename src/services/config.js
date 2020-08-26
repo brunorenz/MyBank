@@ -15,45 +15,45 @@ const weatherUrl =
   "https://api.openweathermap.org/data/2.5/weather?lang=it&units=metric&APPID=2c5c4639e9d55c06402b4396433a5944";
 // Definizione regole
 
-let ruleDefinitions = [
-  {
-    key: "DATA",
-    exist: false,
-    type: "data",
-    pattern: true,
-  },
-  {
-    key: "IMPORTO",
-    exist: false,
-    type: "number",
-    pattern: false,
-  },
-  {
-    key: "CONTO",
-    exist: false,
-    pattern: false,
-  },
-  {
-    key: "ESERCENTE",
-    exist: false,
-    pattern: false,
-  },
-  {
-    key: "BANCOMAT",
-    exist: true,
-    pattern: false,
-  },
-  {
-    key: "POS",
-    exist: true,
-    pattern: false,
-  },
-  {
-    key: "CARTACREDITO",
-    exist: true,
-    pattern: false,
-  },
-];
+// let ruleDefinitions = [
+//   {
+//     key: "DATA",
+//     exist: false,
+//     type: "data",
+//     pattern: true,
+//   },
+//   {
+//     key: "IMPORTO",
+//     exist: false,
+//     type: "number",
+//     pattern: false,
+//   },
+//   {
+//     key: "CONTO",
+//     exist: false,
+//     pattern: false,
+//   },
+//   {
+//     key: "ESERCENTE",
+//     exist: false,
+//     pattern: false,
+//   },
+//   {
+//     key: "BANCOMAT",
+//     exist: true,
+//     pattern: false,
+//   },
+//   {
+//     key: "POS",
+//     exist: true,
+//     pattern: false,
+//   },
+//   {
+//     key: "CARTACREDITO",
+//     exist: true,
+//     pattern: false,
+//   },
+// ];
 
 let configuration = {
   serverUrl: process.env.NODE_ENV === "production" ? serverUrlP : serverUrlD,
@@ -62,7 +62,7 @@ let configuration = {
     id: 3182351,
     timeout: 60000,
   },
-  ruleDefinitions: ruleDefinitions,
+  //ruleDefinitions: ruleDefinitions,
 };
 
 export function getConfiguration() {
@@ -72,33 +72,33 @@ export function getConfiguration() {
 //https://code.tutsplus.com/it/tutorials/getting-started-with-chartjs-line-and-bar-charts--cms-28384
 //
 
-export function checkSecurity(router) {
-  if (SecurityConfiguration.jwtRequired) {
-    let token = window.sessionStorage.getItem("jwttoken");
-    if (token == null) {
-      //let a = router;
-      router.push("/login");
-    }
-  }
-}
-// Definizioni da Server
+// export function checkSecurity(router) {
+//   if (SecurityConfiguration.jwtRequired) {
+//     let token = window.sessionStorage.getItem("jwttoken");
+//     if (token == null) {
+//       //let a = router;
+//       router.push("/login");
+//     }
+//   }
+// }
+// // Definizioni da Server
 
-// Sicurezza
-export var SecurityConfiguration = {
-  basicAuth: "Basic YWRtaW46YWgwNjB2eUEu",
-  basicAuthRequired: true,
-  jwtRequired: true,
-};
+// // Sicurezza
+// export var SecurityConfiguration = {
+//   basicAuth: "Basic YWRtaW46YWgwNjB2eUEu",
+//   basicAuthRequired: true,
+//   jwtRequired: true,
+// };
 
-export function isUserLogged() {
-  return window.sessionStorage.getItem("jwt") != null;
-}
+// export function isUserLogged() {
+//   return window.sessionStorage.getItem("jwt") != null;
+// }
 
-export function doLogoff() {
-  window.sessionStorage.removeItem("jwttoken");
-  window.sessionStorage.removeItem("jwt");
-}
+// export function doLogoff() {
+//   window.sessionStorage.removeItem("jwttoken");
+//   window.sessionStorage.removeItem("jwt");
+// }
 
-export function getXrfToken() {
-  return window.sessionStorage.getItem("jwttoken");
-}
+// export function getXrfToken() {
+//   return window.sessionStorage.getItem("jwttoken");
+// }

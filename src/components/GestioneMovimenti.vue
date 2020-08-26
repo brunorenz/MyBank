@@ -192,11 +192,19 @@ export default {
 
             for (var i = 0; i < dati.length; i++) {
               let d = dati[i];
+              //TODO leggere da configurazione
               let dType = "Pos";
               if (typeof d.bancomat != "undefined" && d.bancomat)
                 dType = "Bancomat";
               else if (typeof d.cartacredito != "undefined" && d.cartacredito)
                 dType = "Carta di Credito";
+              else if (
+                typeof d.accreditoconto != "undefined" &&
+                d.accreditoconto
+              )
+                dType = "Accredito C/C";
+              else if (typeof d.addebitoconto != "undefined" && d.addebitoconto)
+                dType = "Addebito C/C";
               let entry = {
                 date: typeof d.data === "undefined" ? d.messageDate : d.data,
                 importo: d.importo,

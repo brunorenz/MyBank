@@ -1,11 +1,10 @@
 import axios from "axios";
+import { getConfiguration } from "@/services/config";
 import {
-  getConfiguration,
   SecurityConfiguration,
   doLogoff,
   getXrfToken,
-} from "@/services/config";
-
+} from "@/services/security";
 import router from "@/router";
 
 const GET_MESSAGEFILTER = "getMessageFilter";

@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { isUserLogged, doLogoff } from "@/services/config";
+import { isUserLogged, doLogoff } from "@/services/security";
 
 export default {
   name: "HeaderDropdownAccount",

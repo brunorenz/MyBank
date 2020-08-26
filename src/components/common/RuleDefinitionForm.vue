@@ -319,7 +319,7 @@ export default {
           let r = this.rule.rules[ix];
           if (typeof this.cfg.attrTypeProp[r.key].type != "undefined") {
             this.rule.rules[ix].rule.type = this.cfg.attrTypeProp[r.key].type;
-          }
+          } else this.rule.rules[ix].rule.type = undefined;
         }
         httpService
           .updateMessageRule(this.rule)
@@ -499,6 +499,7 @@ export default {
             if (esito.code === 0) {
               if (data.data.length > 0) {
                 this.rule = data.data[0];
+                this.rule.rules = this.validateRules(this.rule.rules);
                 this.updateFormData();
                 this.savedRule = JSON.stringify(this.rule);
               } else this.confermaNuovaRegola();
@@ -510,6 +511,13 @@ export default {
             showMsgErroreEsecuzione(this, error, "getMessageRuleById");
           });
       }
+    },
+    validateRules(rules) {
+      let outrule = [];
+      for (let ix = 0; ix < rules.length; ix++)
+        if (typeof this.cfg.attrTypeProp[rules[ix].key] != "undefined")
+          outrule.push(rules[ix]);
+      return outrule;
     },
     // createConfigurationData() {
     //   let cfg = getConfiguration();

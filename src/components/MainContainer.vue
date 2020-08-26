@@ -89,7 +89,7 @@ import {
   Breadcrumb,
 } from "@coreui/vue";
 import HeaderDropdownAccount from "./HeaderDropdownAccount";
-import { isUserLogged } from "@/services/config";
+import { isUserLogged } from "@/services/security";
 export default {
   name: "MainContainer",
   components: {

@@ -2,7 +2,7 @@
   <div class="hello"></div>
 </template>
 <script>
-import { doLogoff } from "@/services/config";
+import { doLogoff } from "@/services/security";
 import router from "@/router";
 export default {
   mounted: function() {
