@@ -123,6 +123,7 @@ export default class HttpMonitor {
     let inputData = {
       email: email,
       password: password,
+      application: "MyBank",
     };
     let url = this.getSecurityUrl(LOGIN);
     return axios.post(url, "data=" + JSON.stringify(inputData), {
