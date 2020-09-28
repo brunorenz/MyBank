@@ -15,7 +15,7 @@ const GestioneRegole = () => import("@/components/GestioneRegole");
 // Views
 //const About = () => import("@/views/About.vue");
 
-export default new Router({
+let router = new Router({
   //mode: 'history',
   //base: process.env.BASE_URL,
   routes: [
@@ -87,3 +87,5 @@ export default new Router({
     },
   ],
 });
+
+export default router;
