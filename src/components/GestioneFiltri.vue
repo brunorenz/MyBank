@@ -128,6 +128,9 @@
 
 <script>
 import HttpMonitor from "@/services/httpMonitorRest";
+import HttpManager from "@/services/HttpManager";
+import { GET_MESSAGEFILTER, getServiceInfo } from "@/services/restServices";
+
 import {
   showMsgEsitoEsecuzione,
   showMsgErroreEsecuzione,
@@ -233,7 +236,9 @@ export default {
       else this.listMessages();
     },
     getMessageFilter() {
-      const httpService = new HttpMonitor();
+      const httpService = new HttpManager();
+      let info = getServiceInfo(GET_MESSAGEFILTER);
+      info.query.type = this.messageType;
       let isSMS = this.messageType === "SMS";
       let label = isSMS ? "Origine" : "Nome pacchetto";
       this.filterHeaderLabel =
@@ -243,7 +248,7 @@ export default {
         { key: "key", label: label, sortable: true },
       ];
       httpService
-        .getMessageFilter(this.messageType)
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;

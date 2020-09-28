@@ -6,15 +6,27 @@ Vue.use(VueRouter);
 
 // Containers
 const MainContainer = () => import("@/components/MainContainer");
-const Login = () => import("@/components/Login");
-const Logout = () => import("@/components/Logout");
-const GestioneFiltri = () => import("@/components/GestioneFiltri");
-const GestioneMessaggi = () => import("@/components/GestioneMessaggi");
-const GestioneMovimenti = () => import("@/components/GestioneMovimenti");
-const GestioneRegole = () => import("@/components/GestioneRegole");
+// const Login = () => import("@/components/Login");
+// const Logout = () => import("@/components/Logout");
+// const GestioneFiltri = () => import("@/components/GestioneFiltri");
+// const GestioneMessaggi = () => import("@/components/GestioneMessaggi");
+// const GestioneMovimenti = () => import("@/components/GestioneMovimenti");
+// const GestioneRegole = () => import("@/components/GestioneRegole");
 
 // Views
 //const About = () => import("@/views/About.vue");
+
+let route = function(path, componentName, guest) {
+  let c = () => import("@/components/" + componentName);
+  return {
+    path,
+    componentName,
+    component: c,
+    meta: {
+      guest: guest === undefined ? false : guest,
+    },
+  };
+};
 
 let router = new VueRouter({
   //mode: 'history',
@@ -36,53 +48,16 @@ let router = new VueRouter({
         //     guest: true,
         //   },
         // },
+        route("/login", "Login", true),
+        route("/logout", "Logout"),
+        route("/gestioneFiltri", "GestioneFiltri"),
+        route("/gestioneMessaggi", "GestioneMessaggi"),
+        route("/gestioneMovimenti", "GestioneMovimenti"),
+        route("/gestioneRegole", "GestioneRegole"),
+        route("/404", "NotFound", true),
         {
-          path: "login",
-          name: "Login",
-          component: Login,
-          meta: {
-            guest: true,
-          },
-        },
-        {
-          path: "logout",
-          name: "Logout",
-          component: Logout,
-          meta: {
-            guest: false,
-          },
-        },
-        {
-          path: "gestioneFiltri",
-          name: "GestioneFiltri",
-          component: GestioneFiltri,
-          meta: {
-            guest: false,
-          },
-        },
-        {
-          path: "gestioneMessaggi",
-          name: "GestioneMessaggi",
-          component: GestioneMessaggi,
-          meta: {
-            guest: false,
-          },
-        },
-        {
-          path: "gestioneMovimenti",
-          name: "GestioneMovimenti",
-          component: GestioneMovimenti,
-          meta: {
-            guest: false,
-          },
-        },
-        {
-          path: "gestioneRegole",
-          name: "GestioneRegole",
-          component: GestioneRegole,
-          meta: {
-            guest: false,
-          },
+          path: "*",
+          redirect: "404",
         },
       ],
     },
