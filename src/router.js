@@ -1,7 +1,8 @@
 import Vue from "vue";
-import Router from "vue-router";
+import VueRouter from "vue-router";
+import { isUserLogged } from "@/services/security";
 
-Vue.use(Router);
+Vue.use(VueRouter);
 
 // Containers
 const MainContainer = () => import("@/components/MainContainer");
@@ -15,7 +16,7 @@ const GestioneRegole = () => import("@/components/GestioneRegole");
 // Views
 //const About = () => import("@/views/About.vue");
 
-let router = new Router({
+let router = new VueRouter({
   //mode: 'history',
   //base: process.env.BASE_URL,
   routes: [
@@ -86,6 +87,20 @@ let router = new Router({
       ],
     },
   ],
+});
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.guest === false) {
+    if (!isUserLogged()) {
+      next({
+        path: "/login",
+        query: { redirect: to.fullPath },
+      });
+    }
+    next();
+  } else {
+    next();
+  }
 });
 
 export default router;
