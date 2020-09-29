@@ -47,20 +47,19 @@ export default class HttpManager {
   }
 
   _getSecurityHeader(headers, auth) {
-    //debugger;
     if (typeof headers === "undefined") headers = {};
     if (SecurityConfiguration.basicAuthRequired) {
       headers.Authorization = SecurityConfiguration.basicAuth;
     }
-    if (typeof auth === "undefined") auth = false;
-    if (SecurityConfiguration.jwtRequired && auth) {
-      let token = getXrfToken();
-      if (token == null) {
-        //let a = router;
-        router.push("/login");
-        throw new Error("No security record found!");
-      } else headers.JWTToken = token;
-    }
+    // if (typeof auth === "undefined") auth = false;
+    // if (SecurityConfiguration.jwtRequired && auth) {
+    //   let token = getXrfToken();
+    //   if (token == null) {
+    //     //let a = router;
+    //     router.push("/login");
+    //     throw new Error("No security record found!");
+    //   } else headers.JWTToken = token;
+    // }
     return headers;
   }
 
@@ -99,14 +98,18 @@ export default class HttpManager {
   }
 
   callNodeServer(serviceInfo) {
-    let url = this.getUrl(serviceInfo.url, serviceInfo.query);
+    let url = this.getUrl(
+      serviceInfo.url,
+      serviceInfo.query,
+      serviceInfo.baseUrl
+    );
     let auth = true;
     if (serviceInfo.auth != undefined) auth = serviceInfo.auth;
     let usePost = false;
     if (serviceInfo.method != undefined)
       usePost = serviceInfo.method === "POST" ? true : false;
     try {
-      validateRequest(serviceInfo.request.serviceContext);
+      validateRequest(serviceInfo.request);
     } catch (error) {
       console.log("ServiceContext non presente..");
     }

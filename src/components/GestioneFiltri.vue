@@ -129,7 +129,11 @@
 <script>
 import HttpMonitor from "@/services/httpMonitorRest";
 import HttpManager from "@/services/HttpManager";
-import { GET_MESSAGEFILTER, getServiceInfo } from "@/services/restServices";
+import {
+  GET_MESSAGEFILTER,
+  GET_NOTIFICATIONMESSAGE,
+  getServiceInfo,
+} from "@/services/restServices";
 
 import {
   showMsgEsitoEsecuzione,
@@ -270,7 +274,9 @@ export default {
         });
     },
     getNotificationMessage() {
-      const httpService = new HttpMonitor();
+      const httpService = new HttpManager();
+      let info = getServiceInfo(GET_NOTIFICATIONMESSAGE);
+      info.query.type = this.messageType;
       let isSMS = this.messageType === "SMS";
       this.notFilteredMessageHeaderLabel =
         (isSMS ? "Messaggi SMS" : "Notifiche PUSH") + " accettati";
@@ -280,7 +286,7 @@ export default {
         { key: "key", label: label, sortable: true },
       ];
       httpService
-        .getNotificationMessage(this.messageType)
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;

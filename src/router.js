@@ -54,12 +54,12 @@ let router = new VueRouter({
         route("/gestioneMessaggi", "GestioneMessaggi"),
         route("/gestioneMovimenti", "GestioneMovimenti"),
         route("/gestioneRegole", "GestioneRegole"),
-        route("/404", "NotFound", true),
-        {
-          path: "*",
-          redirect: "404",
-        },
       ],
+    },
+    route("/404", "NotFound", true),
+    {
+      path: "*",
+      redirect: "404",
     },
   ],
 });
@@ -71,8 +71,7 @@ router.beforeEach((to, from, next) => {
         path: "/login",
         query: { redirect: to.fullPath },
       });
-    }
-    next();
+    } else next();
   } else {
     next();
   }

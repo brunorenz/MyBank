@@ -23,11 +23,7 @@ export const LOGIN = "login";
 
 const local = false;
 
-export let validateRequest = function(serviceContext) {
-  if (serviceContext != null) {
-    // validate request
-  }
-};
+export let validateRequest = function(serviceContext) {};
 
 // Add a response interceptor
 axios.interceptors.response.use(

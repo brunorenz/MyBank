@@ -59,6 +59,8 @@
 <script>
 import HttpServer from "@/services/httpMonitorRest";
 import router from "@/router";
+import HttpManager from "@/services/HttpManager";
+import { LOGIN, getServiceInfo } from "@/services/restServices";
 export default {
   data() {
     return {
@@ -81,11 +83,18 @@ export default {
 
     handleSubmit(e) {
       e.preventDefault();
+      const httpService = new HttpManager();
+      let info = getServiceInfo(LOGIN);
+      info.request = {
+        email: this.email,
+        password: this.password,
+        application: "MyBank",
+      };
 
-      const httpService = new HttpServer();
+      //const httpService = new HttpServer();
       try {
         httpService
-          .login(this.email, this.password)
+          .callNodeServer(info)
           .then((response) => {
             let dati = response.data;
             if (dati.error.code === 0) {
