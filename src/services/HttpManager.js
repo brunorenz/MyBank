@@ -127,29 +127,6 @@ export default class HttpManager {
   }
 
   /**
-   * Login
-   * @param {*} email
-   * @param {*} password
-   */
-  login(email, password) {
-    let inputData = {
-      email: email,
-      password: password,
-      application: "MyBank",
-    };
-    let url = this.getSecurityUrl(LOGIN);
-    return axios.post(url, "data=" + JSON.stringify(inputData), {
-      headers: this.getPostSecurityHeader(false),
-    });
-  }
-
-  // getWeatherInfo() {
-  //   let url = this.configuration.weatherMonitor.weatherUrl;
-  //   url = url + "&id=" + this.configuration.weatherMonitor.id;
-  //   console.log("Call " + url);
-  //   return axios.get(url, {});
-  // }
-  /**
    * Get message filter by type
    *
    * @param {*} type

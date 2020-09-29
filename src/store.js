@@ -1,30 +1,14 @@
 import Vue from "vue";
 import Vuex from "vuex";
 Vue.use(Vuex);
-const KEY_RISORSA = "VOLRIS";
-const KEY_USER = "VOLUSER";
 
-let cleanSessioneLocalStorage = function(key) {
+const KEY_USER = "MBUSER";
+
+let cleanLocalStorage = function(key) {
   window.sessionStorage.setItem(key, {});
 };
 
-let salvaRisorsaLocalStorage = function(risorsa) {
-  if (risorsa && risorsa.matricola) {
-    let m = {
-      matricola: risorsa.matricola,
-      nomecognome: risorsa.nomecognome,
-    };
-    window.sessionStorage.setItem(KEY_RISORSA, JSON.stringify(m));
-  }
-};
-
-let salvaAttributoLocalStorage = function(key, value) {
-  let usr = recuperaSessioneLocalStorage(KEY_USER);
-  usr[key] = value;
-  window.sessionStorage.setItem(KEY_USER, JSON.stringify(usr));
-};
-
-let recuperaSessioneLocalStorage = function(key) {
+let recuperaLocalStorage = function(key) {
   let s = window.sessionStorage.getItem(key);
   try {
     if (s != null) return JSON.parse(s);
@@ -34,95 +18,62 @@ let recuperaSessioneLocalStorage = function(key) {
   return {};
 };
 
+let salvaAttributoLocalStorage = function(key, value) {
+  let usr = recuperaLocalStorage(KEY_USER);
+  usr[key] = value;
+  window.sessionStorage.setItem(KEY_USER, JSON.stringify(usr));
+};
+// https://stackoverflow.com/questions/50125249/vuex-computed-properties-are-not-reactive
 let store = new Vuex.Store({
   state: {
     datiSessione: undefined,
+    datiStorage: undefined,
     errorMessage: undefined,
-    componentName: undefined,
   },
   getters: {
     errorMessage: (state) => {
       return state.errorMessage;
     },
-    lastComponent: (state) => {
-      let componentName = undefined;
-      let cn = state.componentName;
-      if (cn === undefined)
-        cn = recuperaSessioneLocalStorage(KEY_USER).componentName;
-      if (cn === undefined) cn = [];
-      let l = cn.length;
-      if (l > 0) componentName = cn[l - 1];
-      return componentName;
-    },
+
     storage: (state) => (key) => {
-      console.log("STATE : " + state);
-      console.log("KEY   : " + key);
-      let usr = recuperaSessioneLocalStorage(KEY_USER);
-      return usr[key];
+      let d = state.datiStorage;
+      if (d === undefined) d = {};
+      if (d[key] == undefined) {
+        let usr = recuperaLocalStorage(KEY_USER);
+        return usr[key];
+      }
+      return d[key];
     },
-    sessione: (state) => {
+    sessione: (state) => (key) => {
       let d = state.datiSessione;
       if (d === undefined) d = {};
-      if (!d.risorsa.matricola) {
-        // provo a recuparare da local Storage
-        let ris = recuperaSessioneLocalStorage(KEY_RISORSA);
-        d.risorsa.matricola = ris.matricola;
-        d.risorsa.nomecognome = ris.nomecognome;
-      }
-      if (!d.ndgRicerca) {
-        // provo a recuparare da local Storage
-        let usr = recuperaSessioneLocalStorage(KEY_USER);
-        d.ndgRicerca = usr.ndgRicerca;
-      }
-      return d;
+      return d[key];
     },
   },
   mutations: {
-    previousComponent(state, componentName) {
-      let cn = state.componentName;
-      if (!cn) cn = recuperaSessioneLocalStorage(KEY_USER).componentName;
-      if (!cn) cn = [];
-      let l = cn.length;
-      if (l > 0) {
-        cn.splice(l - 1, 1);
-        salvaAttributoLocalStorage("componentName", cn);
-        state.componentName = cn;
-      }
-    },
-    currentComponent(state, componentName) {
-      let cn = state.componentName;
-      if (!cn) cn = recuperaSessioneLocalStorage(KEY_USER).componentName;
-      if (!cn) cn = [];
-      let l = cn.length;
-      if (l === 0 || cn[l - 1] != componentName) {
-        cn.push(componentName);
-        salvaAttributoLocalStorage("componentName", cn);
-        state.componentName = cn;
-      }
-    },
-
     cleanSessione(state) {
-      cleanSessioneLocalStorage(KEY_RISORSA);
       state.datiSessione = {};
+      state.datiStorage = {};
+      cleanLocalStorage(KEY_USER);
     },
 
     updateKeyStorage(state, { key, value }) {
-      if (key) salvaAttributoLocalStorage(key, value);
+      let s = state.datiStorage;
+      if (s === undefined) s = {};
+      if (key) {
+        s[key] = value;
+        salvaAttributoLocalStorage(key, value);
+        Vue.set(state, "datiStorage", s);
+      }
     },
 
     updateKeySessione(state, { key, value }) {
-      if (state.datiSessione && key) {
+      if (state.datiSessione === undefined) state.datiSessione = {};
+      if (key) {
         state.datiSessione[key] = value;
       }
     },
 
-    updateSessione(state, datiSessione) {
-      if (datiSessione.risorsa && datiSessione.risorsa.matricola)
-        salvaRisorsaLocalStorage(datiSessione.risorsa);
-      if (datiSessione.ndgRicerca)
-        salvaAttributoLocalStorage("ndgRicerca", datiSessione.ndgRicerca);
-      state.datiSessione = datiSessione;
-    },
     errorMessage(state, errorMessage) {
       state.errorMessage = errorMessage;
     },

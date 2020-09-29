@@ -71,10 +71,7 @@ export default {
   methods: {
     showMsgConfermaEsecuzione(message) {
       this.$bvModal
-        .msgBoxOk(message, {
-          //          title: "Please Confirm",
-          //          okVariant: "danger"
-        })
+        .msgBoxOk(message, {})
         .then((value) => {})
         .catch((err) => {
           // An error occurred
@@ -96,27 +93,26 @@ export default {
         httpService
           .callNodeServer(info)
           .then((response) => {
+            debugger;
             let dati = response.data;
             if (dati.error.code === 0) {
-              window.sessionStorage.setItem("jwt", JSON.stringify(dati.data));
-              window.sessionStorage.setItem("jwttoken", dati.data.token);
-              this.$root.$emit("MyBankLogon", "logon");
+              this.$store.commit("updateKeyStorage", {
+                key: "uniqueId",
+                value: dati.data.uniqueId,
+              });
+              //this.$root.$emit("MyBankLogon", "logon");
               let r = router.history.current;
               let redirect = "/";
               if (typeof r.query.redirect != "undefined")
                 redirect = r.query.redirect;
               router.push(redirect);
             } else {
-              //   console.log(
-              //     "Errore in fase di autenticazione! " + dati.error.message
-              //   );
               this.showMsgConfermaEsecuzione(
                 "Errore in fase di logon : " + dati.error.message
               );
             }
           })
           .catch((error) => {
-            //            console.log("Error callig service 'getConfiguration' : " + error);
             this.showMsgConfermaEsecuzione(
               "Servizio non disponibile : " + error
             );

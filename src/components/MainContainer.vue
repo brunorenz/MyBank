@@ -24,7 +24,7 @@
         :defaultOpen="false"
       />
       <!-- <SidebarToggler mobile /> -->
-      <b-navbar-nav class="d-md-down-none" v-if="logonStatus">
+      <b-navbar-nav class="d-md-down-none" v-if="isUserLogged">
         <b-nav-item class="px-3" to="/dashboard">Dashboard</b-nav-item>
         <b-nav-item-dropdown class="px-3" text="Configurazione">
           <b-dropdown-item to="/gestioneFiltri">Filtri</b-dropdown-item>
@@ -44,7 +44,7 @@
       <AppSidebar fixed>
         <SidebarHeader />
         <SidebarForm />
-        <SidebarNav :navItems="nav"></SidebarNav>
+        <SidebarNav :navItems="isUserLogged ? navOn : navOff"></SidebarNav>
         <SidebarFooter />
         <SidebarMinimizer />
       </AppSidebar>
@@ -87,7 +87,7 @@ import {
   Breadcrumb,
 } from "@coreui/vue";
 import HeaderDropdownAccount from "./HeaderDropdownAccount";
-import { isUserLogged } from "@/services/security";
+//import { isUserLogged } from "@/services/security";
 export default {
   name: "MainContainer",
   components: {
@@ -104,9 +104,6 @@ export default {
     HeaderDropdownAccount,
   },
   computed: {
-    // name() {
-    //   return this.$route.name;
-    // }
     name() {
       return this.$route.name;
     },
@@ -114,6 +111,11 @@ export default {
       return this.$route.matched.filter(
         (route) => route.name || route.meta.label
       );
+    },
+    isUserLogged() {
+      let uid = this.$store.getters.storage.uniqueId;
+      console.log("UID = " + uid);
+      return uid != undefined;
     },
   },
   beforeMount: function() {
@@ -123,6 +125,8 @@ export default {
   data: function() {
     return {
       nav: {},
+      navOn: {},
+      navOff: {},
       logonStatus: false,
     };
   },
@@ -138,7 +142,7 @@ export default {
       });
     },
     getNavBar() {
-      let isLogged = isUserLogged();
+      let isLogged = this.isUserLogged; //isUserLogged();
       let navLogon = [
         {
           name: "Logout",
@@ -197,6 +201,8 @@ export default {
         },
       ];
       this.nav = isLogged ? navLogon : navLogoff;
+      this.navOn = navLogon;
+      this.navOff = navLogoff;
       this.logonStatus = isLogged;
     },
   },

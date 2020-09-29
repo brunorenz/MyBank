@@ -37,6 +37,7 @@ export default {
   data: () => {
     return { logoff: false };
   },
+  computed: {},
   mounted: function() {
     this.$root.$on("bv::dropdown::show", (bvEvent) => {
       this.checkLogonStatus();
