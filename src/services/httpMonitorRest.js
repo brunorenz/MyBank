@@ -1,10 +1,6 @@
 import axios from "axios";
 import { getConfiguration } from "@/services/config";
-import {
-  SecurityConfiguration,
-  doLogoff,
-  getXrfToken,
-} from "@/services/security";
+import { SecurityConfiguration, doLogoff, getXrfToken } from "@/services/security";
 import router from "@/router";
 
 const GET_MESSAGEFILTER = "getMessageFilter";
@@ -30,12 +26,7 @@ const local = false;
 axios.interceptors.response.use(
   function(response) {
     if (typeof response.data.error != "undefined") {
-      console.log(
-        "Return code : " +
-          response.data.error.code +
-          " , Message : " +
-          response.data.error.message
-      );
+      console.log("Return code : " + response.data.error.code + " , Message : " + response.data.error.message);
     }
     return response;
   },
@@ -83,21 +74,17 @@ export default class HttpMonitor {
     if (typeof auth === "undefined") auth = false;
     if (SecurityConfiguration.jwtRequired && auth) {
       //let token = window.sessionStorage.getItem("jwttoken");
-      let token = getXrfToken();
-      if (token == null) {
-        //let a = router;
-        router.push("/login");
-        throw new Error("No security record found!");
-      } else headers.JWTToken = token;
+      // let token = getXrfToken();
+      // if (token == null) {
+      //   //let a = router;
+      //   router.push("/login");
+      //   throw new Error("No security record found!");
+      // } else headers.JWTToken = token;
     }
     return headers;
   }
   getSecurityUrl(functionUrl, queryParams) {
-    return this.getUrl(
-      functionUrl,
-      queryParams,
-      this.configuration.urlSecurity
-    );
+    return this.getUrl(functionUrl, queryParams, this.configuration.urlSecurity);
   }
   getUrl(functionUrl, queryParams, url) {
     if (typeof url === "undefined") url = this.configuration.urlApp;
@@ -105,11 +92,8 @@ export default class HttpMonitor {
     if (queryParams && queryParams.length > 0) {
       outUrl += "?";
       for (var index = 0; index < queryParams.length; index++)
-        if (index == 0)
-          outUrl += queryParams[index].key + "=" + queryParams[index].value;
-        else
-          outUrl +=
-            "&" + queryParams[index].key + "=" + queryParams[index].value;
+        if (index == 0) outUrl += queryParams[index].key + "=" + queryParams[index].value;
+        else outUrl += "&" + queryParams[index].key + "=" + queryParams[index].value;
     }
     console.log("Call " + outUrl);
     return outUrl;
@@ -171,9 +155,7 @@ export default class HttpMonitor {
     });
   }
   updateMessageRule(rule) {
-    let url = this.getUrl(
-      typeof rule._id === "undefined" ? ADD_RULE : UPDATE_RULE
-    );
+    let url = this.getUrl(typeof rule._id === "undefined" ? ADD_RULE : UPDATE_RULE);
     return axios.post(url, JSON.stringify(rule), {
       headers: this.getPostJsonSecurityHeader(),
     });
@@ -202,8 +184,7 @@ export default class HttpMonitor {
 
   getMessageRuleById(idRule, idMessage) {
     var queryParams = [];
-    if (typeof idRule != "undefined" && idRule != null)
-      queryParams.push({ key: "idRule", value: idRule });
+    if (typeof idRule != "undefined" && idRule != null) queryParams.push({ key: "idRule", value: idRule });
     else if (typeof idMessage != "undefined" && idMessage != null)
       queryParams.push({ key: "idMessage", value: idMessage });
     return axios.get(this.getUrl(GET_RULES, queryParams), {
@@ -214,8 +195,7 @@ export default class HttpMonitor {
     var queryParams = [{ key: "type", value: type }];
     if (typeof key != "undefined") {
       queryParams.push({ key: "key", value: key });
-      if (typeof key2 != "undefined")
-        queryParams.push({ key: "key2", value: key2 });
+      if (typeof key2 != "undefined") queryParams.push({ key: "key2", value: key2 });
     }
     return axios.get(this.getUrl(GET_RULES, queryParams), {
       headers: this.getSecurityHeader(),

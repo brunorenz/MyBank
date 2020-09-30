@@ -4,25 +4,25 @@
     <b-nav-item-dropdown split no-caret>
       <template slot="button-content">
         <img
-          v-if="logoff"
+          v-if="!isUserLogged"
           src="img/icons/user-off-2.png"
           class="img-avatar"
           alt="NotLogged"
         />
         <img
-          v-if="!logoff"
+          v-else
           src="img/icons/user-on-2.png"
           class="img-avatar"
           alt="Logged"
         />
       </template>
-      <b-dropdown-item :disabled="logoff"
+      <b-dropdown-item :disabled="!isUserLogged"
         ><i class="fa fa-wrench" /> Impostazioni</b-dropdown-item
       >
-      <b-dropdown-item-button @click="doLogoff()" v-if="!logoff"
+      <b-dropdown-item-button @click="doLogoff()" v-if="isUserLogged"
         ><i class="fa fa-lock" /> Logout</b-dropdown-item-button
       >
-      <b-dropdown-item v-if="logoff" to="/login"
+      <b-dropdown-item v-if="!isUserLogged" to="/login"
         ><i class="fa fa-lock" /> Login</b-dropdown-item
       >
     </b-nav-item-dropdown>
@@ -30,33 +30,43 @@
 </template>
 
 <script>
-import { isUserLogged, doLogoff } from "@/services/security";
+import { doLogoff } from "@/services/security";
 
 export default {
   name: "HeaderDropdownAccount",
   data: () => {
     return { logoff: false };
   },
-  computed: {},
+  computed: {
+    isUserLogged() {
+      //let uid = this.$store.getters.sessione.uniqueId;
+      let uid = this.$store.getters.uid;
+
+      let logged = uid != "";
+      console.log("React UID = " + uid + " - Logged " + logged);
+      return logged;
+    },
+  },
   mounted: function() {
-    this.$root.$on("bv::dropdown::show", (bvEvent) => {
-      this.checkLogonStatus();
-    });
-    this.$root.$on("MyBankLogon", (text) => {
-      this.checkLogonStatus();
-    });
-    this.checkLogonStatus();
+    // this.$root.$on("bv::dropdown::show", (bvEvent) => {
+    //   this.checkLogonStatus();
+    // });
+    // this.$root.$on("MyBankLogon", (text) => {
+    //   this.checkLogonStatus();
+    // });
+    // this.checkLogonStatus();
   },
   methods: {
-    checkLogonStatus() {
-      let logoff = !isUserLogged();
-      console.log("Logon status : " + logoff);
-      this.logoff = logoff;
-    },
+    // checkLogonStatus() {
+    //   let logoff = !isUserLogged();
+    //   console.log("Logon status : " + logoff);
+    //   this.logoff = logoff;
+    // },
     doLogoff() {
       console.log("Do logoff!");
       doLogoff();
-      this.$root.$emit("MyBankLogon", "logon");
+      this.$router.push("/login");
+      //this.$root.$emit("MyBankLogon", "logon");
     },
   },
 };

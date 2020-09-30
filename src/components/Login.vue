@@ -61,6 +61,7 @@ import HttpServer from "@/services/httpMonitorRest";
 import router from "@/router";
 import HttpManager from "@/services/HttpManager";
 import { LOGIN, getServiceInfo } from "@/services/restServices";
+import { doLogon } from "@/services/security";
 export default {
   data() {
     return {
@@ -93,13 +94,14 @@ export default {
         httpService
           .callNodeServer(info)
           .then((response) => {
-            debugger;
             let dati = response.data;
             if (dati.error.code === 0) {
-              this.$store.commit("updateKeyStorage", {
-                key: "uniqueId",
-                value: dati.data.uniqueId,
-              });
+              doLogon(dati.data.uniqueId);
+              // this.$store.commit("updateKeyStorage", {
+              //   key: "uid",
+              //   value: dati.data.uniqueId,
+              // });
+              //this.$store.commit("logon", dati.data.uniqueId);
               //this.$root.$emit("MyBankLogon", "logon");
               let r = router.history.current;
               let redirect = "/";

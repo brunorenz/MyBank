@@ -18,21 +18,36 @@ let recuperaLocalStorage = function(key) {
   return {};
 };
 
+let leggiAttributoLocalStorage = function(key, def) {
+  let value = recuperaLocalStorage(KEY_USER)[key];
+  if (value === undefined) value = def;
+  return value;
+};
+
 let salvaAttributoLocalStorage = function(key, value) {
   let usr = recuperaLocalStorage(KEY_USER);
   usr[key] = value;
   window.sessionStorage.setItem(KEY_USER, JSON.stringify(usr));
 };
 // https://stackoverflow.com/questions/50125249/vuex-computed-properties-are-not-reactive
+// per abilitare react property esplicita con relativo getter
 let store = new Vuex.Store({
   state: {
-    datiSessione: undefined,
-    datiStorage: undefined,
-    errorMessage: undefined,
+    datiSessione: {},
+    datiStorage: {
+      uid: "",
+    },
+    errorMessage: {},
   },
   getters: {
     errorMessage: (state) => {
       return state.errorMessage;
+    },
+
+    uid: (state) => {
+      let l = state.datiStorage.uid;
+      if (l === "") l = leggiAttributoLocalStorage("uid", "");
+      return l;
     },
 
     storage: (state) => (key) => {
@@ -57,13 +72,15 @@ let store = new Vuex.Store({
       cleanLocalStorage(KEY_USER);
     },
 
+    logon(state, uid) {
+      state.uid = uid;
+      salvaAttributoLocalStorage("uid", uid);
+    },
+
     updateKeyStorage(state, { key, value }) {
-      let s = state.datiStorage;
-      if (s === undefined) s = {};
       if (key) {
-        s[key] = value;
+        state.datiStorage[key] = value;
         salvaAttributoLocalStorage(key, value);
-        Vue.set(state, "datiStorage", s);
       }
     },
 

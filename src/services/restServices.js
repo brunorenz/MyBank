@@ -1,9 +1,10 @@
 export const GET_MESSAGEFILTER = "getMessageFilter";
 export const GET_NOTIFICATIONMESSAGE = "getDistinctNotFilteredMessageSender";
+export const LIST_MESSAGES = "listMessages";
 export const LOGIN = "login";
-const DELETE_MESSAGEFILTER = "deleteMessageFilter";
-const ADD_MESSAGEFILTER = "addMessageFilter";
-const LIST_MESSAGES = "listMessages";
+export const DELETE_MESSAGEFILTER = "deleteMessageFilter";
+export const ADD_MESSAGEFILTER = "addMessageFilter";
+
 const ANALIZE_MESSAGES = "analizeMessages";
 const LIST_MOVEMENTS = "listAccountMovements";
 const GET_RULES = "getMessageRule";
@@ -31,20 +32,17 @@ let serviceDefinitionGET = function(url) {
   };
 };
 
-let getMessageFilter = function() {
-  return serviceDefinitionGET(GET_MESSAGEFILTER);
-};
-let getDistinctNotFilteredMessageSender = function() {
-  return serviceDefinitionGET(GET_NOTIFICATIONMESSAGE);
-};
 let login = function() {
   let r = serviceDefinitionPOST(LOGIN);
   r.baseUrl = getConfiguration().urlSecurity;
   return r;
 };
 const serviceConfiguration = {
-  getMessageFilter,
-  getDistinctNotFilteredMessageSender,
+  getMessageFilter: () => serviceDefinitionGET(GET_MESSAGEFILTER),
+  getDistinctNotFilteredMessageSender: () => serviceDefinitionGET(GET_NOTIFICATIONMESSAGE),
+  listMessages: () => serviceDefinitionGET(LIST_MESSAGES),
+  addMessageFilter: () => serviceDefinitionPOST(ADD_MESSAGEFILTER),
+  deleteMessageFilter: () => serviceDefinitionPOST(DELETE_MESSAGEFILTER),
   login,
 };
 

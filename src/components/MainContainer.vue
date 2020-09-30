@@ -87,7 +87,7 @@ import {
   Breadcrumb,
 } from "@coreui/vue";
 import HeaderDropdownAccount from "./HeaderDropdownAccount";
-//import { isUserLogged } from "@/services/security";
+import { doLogon } from "@/services/security";
 export default {
   name: "MainContainer",
   components: {
@@ -113,14 +113,20 @@ export default {
       );
     },
     isUserLogged() {
-      let uid = this.$store.getters.storage.uniqueId;
-      console.log("UID = " + uid);
-      return uid != undefined;
+      //let uid = this.$store.getters.sessione.uniqueId;
+      let uid = this.$store.getters.uid;
+
+      let logged = uid != "";
+      console.log("React UID = " + uid + " - Logged " + logged);
+      return logged;
     },
   },
   beforeMount: function() {
+    // update logon status
+    let uid = this.$store.getters.uid;
+    if (uid != "") doLogon(uid);
     this.getNavBar();
-    this.refreshMenu();
+    //this.refreshMenu();
   },
   data: function() {
     return {
@@ -135,14 +141,14 @@ export default {
       if (window.localStorage) console.log("Local Storage Supported");
       else console.log("Local Storage Not Supported");
     },
-    refreshMenu() {
-      this.$root.$on("MyBankLogon", (text) => {
-        console.log("Event refreshMenu !!");
-        this.getNavBar();
-      });
-    },
+    // refreshMenu() {
+    //   this.$root.$on("MyBankLogon", (text) => {
+    //     console.log("Event refreshMenu !!");
+    //     this.getNavBar();
+    //   });
+    // },
     getNavBar() {
-      let isLogged = this.isUserLogged; //isUserLogged();
+      let isLogged = true;
       let navLogon = [
         {
           name: "Logout",

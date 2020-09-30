@@ -7,7 +7,11 @@ import router from "@/router";
 export default {
   mounted: function() {
     doLogoff();
-    this.$root.$emit("MyBankLogon", "logout");
+    // this.$store.commit("updateKeyStorage", {
+    //   key: "uid",
+    //   value: "",
+    // });
+    //this.$root.$emit("MyBankLogon", "logout");
     router.push("/login");
   },
 };

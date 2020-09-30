@@ -40,16 +40,10 @@
         </template>
       </b-table>
       <b-row class="justify-content-md-center">
-        <b-button
-          class="mx-2"
-          variant="primary"
-          @click="deleteMessageMsgBox"
-          :disabled="filterSelected.length === 0"
+        <b-button class="mx-2" variant="primary" @click="deleteMessageMsgBox" :disabled="filterSelected.length === 0"
           >Elimina filtro</b-button
         >
-        <b-button class="mx-2" variant="primary" v-b-toggle.collapse-1-inner
-          >Aggiungi filtro</b-button
-        >
+        <b-button class="mx-2" variant="primary" v-b-toggle.collapse-1-inner>Aggiungi filtro</b-button>
       </b-row>
     </b-card>
     <b-collapse id="collapse-1-inner">
@@ -89,18 +83,10 @@
           </template>
         </b-table>
         <b-row class="justify-content-md-center">
-          <b-button
-            class="mx-2"
-            variant="primary"
-            v-b-toggle.collapse-2-inner
-            :disabled="selectedAll.length === 0"
+          <b-button class="mx-2" variant="primary" v-b-toggle.collapse-2-inner :disabled="selectedAll.length === 0"
             >Mostra messaggi</b-button
           >
-          <b-button
-            class="mx-2"
-            variant="primary"
-            @click="addMessageMsgBox"
-            :disabled="selectedAll.length === 0"
+          <b-button class="mx-2" variant="primary" @click="addMessageMsgBox" :disabled="selectedAll.length === 0"
             >Aggiungi</b-button
           >
         </b-row>
@@ -127,19 +113,17 @@
 </template>
 
 <script>
-import HttpMonitor from "@/services/httpMonitorRest";
 import HttpManager from "@/services/HttpManager";
 import {
   GET_MESSAGEFILTER,
   GET_NOTIFICATIONMESSAGE,
+  LIST_MESSAGES,
+  ADD_MESSAGEFILTER,
+  DELETE_MESSAGEFILTER,
   getServiceInfo,
 } from "@/services/restServices";
 
-import {
-  showMsgEsitoEsecuzione,
-  showMsgErroreEsecuzione,
-  showConfirmationMessage,
-} from "@/services/utilities";
+import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 
 export default {
   name: "GestioneMessaggi",
@@ -184,27 +168,21 @@ export default {
       this.$refs.notFilteredMessageTable.clearSelected();
     },
     deleteMessageMsgBox() {
-      showConfirmationMessage(
-        this,
-        "Confermi la cancellazione ?",
-        this.deleteMessage
-      );
+      showConfirmationMessage(this, "Confermi la cancellazione ?", this.deleteMessage);
     },
     addMessageMsgBox() {
-      showConfirmationMessage(
-        this,
-        "Confermi l'inserimento ?",
-        this.addMessage
-      );
+      showConfirmationMessage(this, "Confermi l'inserimento ?", this.addMessage);
     },
     addMessage() {
       let entry = { type: this.messageType };
       if (this.messageType === "SMS") entry.sender = this.selectedAll[0].key;
       else entry.packageName = this.selectedAll[0].key;
       console.log("add record " + entry);
-      const httpService = new HttpMonitor();
+      const httpService = new HttpManager();
+      let info = getServiceInfo(ADD_MESSAGEFILTER);
+      info.request = entry;
       httpService
-        .addMessageFilter(entry)
+        .callNodeServer(info)
         .then((response) => {
           this.reloadAndClear();
         })
@@ -214,10 +192,11 @@ export default {
     },
     deleteMessage() {
       // chiedi conferma
-      const httpService = new HttpMonitor();
-      let record = this.filterSelected[0];
+      const httpService = new HttpManager();
+      let info = getServiceInfo(DELETE_MESSAGEFILTER);
+      info.request = this.filterSelected[0];
       httpService
-        .deleteMessageFilter(record)
+        .callNodeServer(info)
         .then((response) => {
           this.reloadAndClear();
         })
@@ -245,8 +224,7 @@ export default {
       info.query.type = this.messageType;
       let isSMS = this.messageType === "SMS";
       let label = isSMS ? "Origine" : "Nome pacchetto";
-      this.filterHeaderLabel =
-        "Filtri attivi per " + (isSMS ? "messaggi SMS" : "notifiche PUSH");
+      this.filterHeaderLabel = "Filtri attivi per " + (isSMS ? "messaggi SMS" : "notifiche PUSH");
       this.filterFields = [
         { key: "selezionato", label: "Selezionato" },
         { key: "key", label: label, sortable: true },
@@ -261,9 +239,7 @@ export default {
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               datiServers.push(
-                isSMS
-                  ? { key: dati[i].sender, _id: dati[i]._id }
-                  : { key: dati[i].packageName, _id: dati[i]._id }
+                isSMS ? { key: dati[i].sender, _id: dati[i]._id } : { key: dati[i].packageName, _id: dati[i]._id }
               );
             }
             this.filterItems = datiServers;
@@ -278,8 +254,7 @@ export default {
       let info = getServiceInfo(GET_NOTIFICATIONMESSAGE);
       info.query.type = this.messageType;
       let isSMS = this.messageType === "SMS";
-      this.notFilteredMessageHeaderLabel =
-        (isSMS ? "Messaggi SMS" : "Notifiche PUSH") + " accettati";
+      this.notFilteredMessageHeaderLabel = (isSMS ? "Messaggi SMS" : "Notifiche PUSH") + " accettati";
       let label = isSMS ? "Origine" : "Nome pacchetto";
       this.fieldsAll = [
         { key: "selezionatoAA", label: "Selezionato" },
@@ -306,13 +281,8 @@ export default {
     listMessages() {
       let isSMS = this.messageType === "SMS";
       this.sampleMessagesHeaderLabel =
-        (isSMS
-          ? "Ultimi messaggi SMS ricevuti da "
-          : "Ultime notifiche PUSH ricevite da ") + this.selectedAll[0].key;
-      const httpService = new HttpMonitor();
-      this.fieldsSampleMessages = [
-        { key: "date", label: "Data", sortable: true },
-      ];
+        (isSMS ? "Ultimi messaggi SMS ricevuti da " : "Ultime notifiche PUSH ricevite da ") + this.selectedAll[0].key;
+      this.fieldsSampleMessages = [{ key: "date", label: "Data", sortable: true }];
       if (!isSMS)
         this.fieldsSampleMessages.push({
           key: "sender",
@@ -324,8 +294,12 @@ export default {
         label: "Messaggio",
         sortable: true,
       });
+      const httpService = new HttpManager();
+      let info = getServiceInfo(LIST_MESSAGES);
+      info.query.type = this.messageType;
+      info.query.filter = this.selectedAll[0].key;
       httpService
-        .listMessages(this.messageType, this.selectedAll[0].key)
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -334,9 +308,7 @@ export default {
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               let entry = {
-                date: this.$moment(new Date(dati[i].time)).format(
-                  "DD/MM/YY HH:MM"
-                ),
+                date: this.$moment(new Date(dati[i].time)).format("DD/MM/YY HH:MM"),
               };
               if (!isSMS) entry.sender = dati[i].sender;
               entry.message = dati[i].message;

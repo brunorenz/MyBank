@@ -1,3 +1,5 @@
+import store from "@/store";
+
 export function checkSecurity(router) {
   if (SecurityConfiguration.jwtRequired) {
     let token = window.sessionStorage.getItem("jwttoken");
@@ -16,12 +18,32 @@ export var SecurityConfiguration = {
 };
 
 export function isUserLogged() {
-  return window.sessionStorage.getItem("jwt") != null;
+  let uid = store.getters.uid;
+  let logged = uid != "";
+  console.log("UDI : " + uid + " - Logged " + logged);
+  return logged;
+}
+let updateUid = function(uid) {
+  store.commit("updateKeyStorage", {
+    key: "uid",
+    value: uid,
+  });
+};
+export function doLogoff() {
+  updateUid("");
+
+  // store.commit("updateKeyStorage", {
+  //   key: "uid",
+  //   value: "",
+  // });
 }
 
-export function doLogoff() {
-  window.sessionStorage.removeItem("jwttoken");
-  window.sessionStorage.removeItem("jwt");
+export function doLogon(uid) {
+  updateUid(uid);
+  // store.commit("updateKeyStorage", {
+  //   key: "uid",
+  //   value: uid,
+  // });
 }
 
 export function getXrfToken() {
