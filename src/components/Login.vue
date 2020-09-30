@@ -9,8 +9,7 @@
               <p class="text-muted">Effettua il login al tuo account</p>
               <b-input-group class="mb-3">
                 <b-input-group-prepend
-                  ><b-input-group-text
-                    ><i class="fa fa-user"></i></b-input-group-text
+                  ><b-input-group-text><i class="fa fa-user"></i></b-input-group-text
                 ></b-input-group-prepend>
                 <b-form-input
                   type="text"
@@ -24,8 +23,7 @@
               </b-input-group>
               <b-input-group class="mb-4">
                 <b-input-group-prepend
-                  ><b-input-group-text
-                    ><i class="fa fa-lock"></i></b-input-group-text
+                  ><b-input-group-text><i class="fa fa-lock"></i></b-input-group-text
                 ></b-input-group-prepend>
                 <b-form-input
                   type="password"
@@ -38,14 +36,10 @@
               </b-input-group>
               <b-row>
                 <b-col cols="6">
-                  <b-button variant="primary" class="px-4" @click="handleSubmit"
-                    >Login</b-button
-                  >
+                  <b-button variant="primary" class="px-4" @click="handleSubmit">Login</b-button>
                 </b-col>
                 <b-col cols="6" class="text-right">
-                  <b-button variant="link" class="px-0"
-                    >Password dimenticata?</b-button
-                  >
+                  <b-button variant="link" class="px-0">Password dimenticata?</b-button>
                 </b-col>
               </b-row>
             </b-form>
@@ -57,11 +51,12 @@
 </template>
 
 <script>
-import HttpServer from "@/services/httpMonitorRest";
+//import HttpServer from "@/services/httpMonitorRest";
 import router from "@/router";
 import HttpManager from "@/services/HttpManager";
 import { LOGIN, getServiceInfo } from "@/services/restServices";
 import { doLogon } from "@/services/security";
+import { showMsgErroreEsecuzione } from "@/services/utilities";
 export default {
   data() {
     return {
@@ -70,14 +65,14 @@ export default {
     };
   },
   methods: {
-    showMsgConfermaEsecuzione(message) {
-      this.$bvModal
-        .msgBoxOk(message, {})
-        .then((value) => {})
-        .catch((err) => {
-          // An error occurred
-        });
-    },
+    // showMsgConfermaEsecuzione(message) {
+    //   this.$bvModal
+    //     .msgBoxOk(message, {})
+    //     .then((value) => {})
+    //     .catch((err) => {
+    //       // An error occurred
+    //     });
+    // },
 
     handleSubmit(e) {
       e.preventDefault();
@@ -105,22 +100,17 @@ export default {
               //this.$root.$emit("MyBankLogon", "logon");
               let r = router.history.current;
               let redirect = "/";
-              if (typeof r.query.redirect != "undefined")
-                redirect = r.query.redirect;
+              if (typeof r.query.redirect != "undefined") redirect = r.query.redirect;
               router.push(redirect);
             } else {
-              this.showMsgConfermaEsecuzione(
-                "Errore in fase di logon : " + dati.error.message
-              );
+              showMsgErroreEsecuzione(this);
             }
           })
           .catch((error) => {
-            this.showMsgConfermaEsecuzione(
-              "Servizio non disponibile : " + error
-            );
+            showMsgErroreEsecuzione(this);
           });
       } catch (error) {
-        this.showMsgConfermaEsecuzione("Servizio non disponibile : " + error);
+        showMsgErroreEsecuzione(this.error);
       }
     },
   },

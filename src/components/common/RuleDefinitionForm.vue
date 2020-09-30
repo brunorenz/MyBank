@@ -3,9 +3,7 @@
     <b-row>
       <b-col sm="3">
         <label class="font-weight-bold">
-          {{
-            rule.type === "SMS" ? "Orgine SMS" : "Nome pacchetto messaggio PUSH"
-          }}
+          {{ rule.type === "SMS" ? "Orgine SMS" : "Nome pacchetto messaggio PUSH" }}
         </label>
       </b-col>
       <b-col sm="6">
@@ -25,11 +23,7 @@
         <label class="font-weight-bold">Conto Base</label>
       </b-col>
       <b-col sm="6">
-        <b-form-select
-          v-model="rule.bankId"
-          :options="accountOptions"
-          @change="checkField()"
-        ></b-form-select>
+        <b-form-select v-model="rule.bankId" :options="accountOptions" @change="checkField()"></b-form-select>
       </b-col>
     </b-row>
     <b-row v-if="typeof message != 'undefined'" class="mt-1">
@@ -45,11 +39,7 @@
       <b-row>
         <b-col sm="2">
           <b-row class="text-center">
-            <b-button
-              class="my-1"
-              variant="primary"
-              @click="manageButton('deleteB', entry.ix)"
-            >
+            <b-button class="my-1" variant="primary" @click="manageButton('deleteB', entry.ix)">
               <b-icon icon="trash"></b-icon>
             </b-button>
             <b-button
@@ -79,70 +69,29 @@
               ></b-form-select>
             </b-form-group>
             <b-form-group label="Obbligatorio" class="col-sm-3">
-              <b-form-checkbox
-                v-model="entry.mandatory"
-                @change="checkField()"
-              ></b-form-checkbox>
+              <b-form-checkbox v-model="entry.mandatory" @change="checkField()"></b-form-checkbox>
             </b-form-group>
-            <b-form-group
-              label="Regola EXIST"
-              class="col-sm-3"
-              v-if="cfg.attrTypeProp[entry.key].exist === true"
-            >
-              <b-input
-                v-model="entry.rule.exist"
-                @change="checkField()"
-              ></b-input>
+            <b-form-group label="Regola EXIST" class="col-sm-3" v-if="cfg.attrTypeProp[entry.key].exist === true">
+              <b-input v-model="entry.rule.exist" @change="checkField()"></b-input>
             </b-form-group>
-            <b-form-group
-              label="Testo che precede"
-              class="col-sm-3"
-              v-if="cfg.attrTypeProp[entry.key].exist === false"
-            >
-              <b-input
-                v-model="entry.rule.before"
-                @change="checkField()"
-              ></b-input>
+            <b-form-group label="Testo che precede" class="col-sm-3" v-if="cfg.attrTypeProp[entry.key].exist === false">
+              <b-input v-model="entry.rule.before" @change="checkField()"></b-input>
             </b-form-group>
-            <b-form-group
-              label="Testo in coda"
-              class="col-sm-3"
-              v-if="cfg.attrTypeProp[entry.key].exist === false"
-            >
-              <b-input
-                v-model="entry.rule.after"
-                @change="checkField()"
-              ></b-input>
+            <b-form-group label="Testo in coda" class="col-sm-3" v-if="cfg.attrTypeProp[entry.key].exist === false">
+              <b-input v-model="entry.rule.after" @change="checkField()"></b-input>
             </b-form-group>
-            <b-form-group
-              label="Valido se esiste"
-              class="col-sm-3"
-              v-if="cfg.attrTypeProp[entry.key].exist === false"
-            >
-              <b-input
-                v-model="entry.rule.ifexist"
-                @change="checkField()"
-              ></b-input>
+            <b-form-group label="Valido se esiste" class="col-sm-3" v-if="cfg.attrTypeProp[entry.key].exist === false">
+              <b-input v-model="entry.rule.ifexist" @change="checkField()"></b-input>
             </b-form-group>
             <b-form-group
               label="Valore se non trovato"
               class="col-sm-3"
               v-if="cfg.attrTypeProp[entry.key].ifnull === true"
             >
-              <b-input
-                v-model="entry.rule.ifnull"
-                @change="checkField()"
-              ></b-input>
+              <b-input v-model="entry.rule.ifnull" @change="checkField()"></b-input>
             </b-form-group>
-            <b-form-group
-              label="Pattern"
-              class="col-sm-3"
-              v-if="cfg.attrTypeProp[entry.key].pattern === true"
-            >
-              <b-input
-                v-model="entry.rule.pattern"
-                @change="checkField()"
-              ></b-input>
+            <b-form-group label="Pattern" class="col-sm-3" v-if="cfg.attrTypeProp[entry.key].pattern === true">
+              <b-input v-model="entry.rule.pattern" @change="checkField()"></b-input>
             </b-form-group>
           </b-row>
         </b-col>
@@ -150,27 +99,13 @@
     </b-card>
     <b-row class="ml-0">
       <b-button variant="primary" @click="annulla">Annulla</b-button>
-      <b-button
-        variant="primary"
-        @click="updateMessageRule(true)"
-        class="ml-2"
-        :disabled="!anyChange && !newRule"
-        >{{ displayAdd }}</b-button
-      >
-      <b-button
-        v-if="typeof message != 'undefined'"
-        class="ml-2"
-        variant="success"
-        @click="testRule"
+      <b-button variant="primary" @click="updateMessageRule(true)" class="ml-2" :disabled="!anyChange && !newRule">{{
+        displayAdd
+      }}</b-button>
+      <b-button v-if="typeof message != 'undefined'" class="ml-2" variant="success" @click="testRule"
         >Simula Regola</b-button
       >
-      <b-button
-        class="ml-2"
-        variant="danger"
-        @click="deleteRule(true)"
-        :disabled="newRule"
-        >Elimina Regola</b-button
-      >
+      <b-button class="ml-2" variant="danger" @click="deleteRule(true)" :disabled="newRule">Elimina Regola</b-button>
     </b-row>
     <b-modal
       v-model="showModalAddRule"
@@ -180,30 +115,18 @@
     >
       <div>
         <b-form-group label="Tipo Regola" class="col-sm-6">
-          <b-form-radio-group
-            v-model="ruleType"
-            :options="ruleTypeOptions"
-          ></b-form-radio-group>
+          <b-form-radio-group v-model="ruleType" :options="ruleTypeOptions"></b-form-radio-group>
         </b-form-group>
       </div>
     </b-modal>
-    <b-modal
-      v-model="showModalTestRule"
-      id="modalTestRule"
-      title="Esito Simulazione Regola"
-    >
+    <b-modal v-model="showModalTestRule" id="modalTestRule" title="Esito Simulazione Regola">
       <div>
         <b-row>
           <b-col sm="6">accettata</b-col>
           <b-col sm="6">
-            <strong
-              :style="
-                esitoTestRegola.accepted === true
-                  ? 'color: green;'
-                  : 'color: red;'
-              "
-              >{{ esitoTestRegola.accepted }}</strong
-            >
+            <strong :style="esitoTestRegola.accepted === true ? 'color: green;' : 'color: red;'">{{
+              esitoTestRegola.accepted
+            }}</strong>
           </b-col>
         </b-row>
         <b-row>
@@ -213,17 +136,13 @@
           </b-col>
         </b-row>
         <b-row v-for="attr in cfg.attrTypeOptions" :key="attr.value">
-          <b-col sm="6" v-if="ruleByKey[attr.value] != null">{{
-            attr.valueLC
-          }}</b-col>
+          <b-col sm="6" v-if="ruleByKey[attr.value] != null">{{ attr.valueLC }}</b-col>
           <b-col sm="6" v-if="ruleByKey[attr.value] != null">
             <strong>{{ esitoTestRegola[attr.valueLC] }}</strong>
           </b-col>
         </b-row>
         <b-row v-for="attr in cfg.attrTypeOptionsExist" :key="attr.value">
-          <b-col sm="6" v-if="ruleByKey[attr.value] != null">{{
-            attr.valueLC
-          }}</b-col>
+          <b-col sm="6" v-if="ruleByKey[attr.value] != null">{{ attr.valueLC }}</b-col>
           <b-col sm="6" v-if="ruleByKey[attr.value] != null">
             <strong>{{ esitoTestRegola[attr.valueLC] }}</strong>
           </b-col>
@@ -231,12 +150,7 @@
       </div>
       <template v-slot:modal-footer>
         <div>
-          <b-button
-            variant="primary"
-            class="float-right"
-            @click="showModalTestRule = false"
-            >Chiudi</b-button
-          >
+          <b-button variant="primary" class="float-right" @click="showModalTestRule = false">Chiudi</b-button>
         </div>
       </template>
     </b-modal>
@@ -244,13 +158,16 @@
 </template>
 
 <script>
-//import { getConfiguration } from "@/services/config";
-import HttpMonitor from "@/services/httpMonitorRest";
+import HttpManager from "@/services/HttpManager";
 import {
-  showMsgEsitoEsecuzione,
-  showMsgErroreEsecuzione,
-  showConfirmationMessage,
-} from "@/services/utilities";
+  ADD_RULE,
+  UPDATE_RULE,
+  TEST_RULE,
+  GET_RULES,
+  GET_CONFIGURATION,
+  getServiceInfo,
+} from "@/services/restServices";
+import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 export default {
   name: "RuleDefinitionForm",
   props: ["ruleId", "message"],
@@ -303,17 +220,14 @@ export default {
       return dis;
     },
     updateMessageRule(confirm) {
+      let add = typeof this.rule._id === "undefined";
       if (typeof confirm != "undefined") {
-        let add = typeof this.rule._id === "undefined";
         showConfirmationMessage(
           this,
-          "Confermi " +
-            (add ? "inserimento" : "aggiornamento") +
-            " della regola ?",
+          "Confermi " + (add ? "inserimento" : "aggiornamento") + " della regola ?",
           this.updateMessageRule
         );
       } else {
-        const httpService = new HttpMonitor();
         // valida rule
         for (let ix = 0; ix < this.rule.rules.length; ix++) {
           let r = this.rule.rules[ix];
@@ -321,8 +235,11 @@ export default {
             this.rule.rules[ix].rule.type = this.cfg.attrTypeProp[r.key].type;
           } else this.rule.rules[ix].rule.type = undefined;
         }
+        const httpService = new HttpManager();
+        let info = getServiceInfo(add ? ADD_RULE : UPDATE_RULE);
+        info.request = this.rule;
         httpService
-          .updateMessageRule(this.rule)
+          .callNodeServer(info)
           .then((response) => {
             var data = response.data;
             let esito = data.error;
@@ -331,17 +248,18 @@ export default {
               this.rule._id = data.data._id;
               this.savedRule = JSON.stringify(this.rule);
               this.checkField();
-            } else showMsgErroreEsecuzione(this, esito, "updateMessageRule");
+            } else showMsgErroreEsecuzione(this);
           })
           .catch((error) => {
-            showMsgErroreEsecuzione(this, error, "updateMessageRule");
+            showMsgErroreEsecuzione(this);
           });
       }
     },
     getMyBankConfiguration() {
-      const httpService = new HttpMonitor();
+      const httpService = new HttpManager();
+      let info = getServiceInfo(GET_CONFIGURATION);
       httpService
-        .getMyBankConfiguration()
+        .callNodeServer(info)
         .then((response) => {
           let cfg = {};
           let a = [];
@@ -352,8 +270,7 @@ export default {
             for (let ix = 0; ix < d.accounts.length; ix++) {
               a.push({
                 value: d.accounts[ix].account,
-                text:
-                  d.accounts[ix].bankName + " - " + d.accounts[ix].description,
+                text: d.accounts[ix].bankName + " - " + d.accounts[ix].description,
               });
             }
 
@@ -381,13 +298,10 @@ export default {
               };
             }
             this.cfg = cfg;
-            //this.attrTypeOptionsExist = oe;
-            //this.attrTypeOptions = o;
-            //this.attrTypeProp = p;
           }
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "getAccounts");
+          showMsgErroreEsecuzione(this);
         });
     },
     annulla(confirm) {
@@ -396,11 +310,7 @@ export default {
         let r = JSON.stringify(this.rule);
         //let r1 = JSON.stringify(this.savedRule);
         if (r != this.savedRule) {
-          showConfirmationMessage(
-            this,
-            "Confermi l'annullamento delle modifiche apportate ?",
-            this.annulla
-          );
+          showConfirmationMessage(this, "Confermi l'annullamento delle modifiche apportate ?", this.annulla);
         } else this.$emit("updateRules");
       } else this.$emit("updateRules");
     },
@@ -409,10 +319,7 @@ export default {
         rules: [],
         bankId: null,
         type: this.message.type,
-        key:
-          this.message.type === "SMS"
-            ? this.message.sender
-            : this.message.packageName,
+        key: this.message.type === "SMS" ? this.message.sender : this.message.packageName,
       };
       if (this.message.type === "PUSH") rule.key2 = this.message.sender;
       this.rule = rule;
@@ -428,15 +335,12 @@ export default {
       } else {
         r = { key: "DATA", rule: {} };
       }
-      if (typeof this.rule != "undefined" && this.rule != null)
-        this.rule.rules.push(r);
+      if (typeof this.rule != "undefined" && this.rule != null) this.rule.rules.push(r);
       this.updateFormData();
     },
     checkNullInputData() {
-      let nullData =
-        typeof this.message === "undefined" || this.message === null;
-      if (nullData)
-        nullData = typeof this.ruleId === "undefined" || this.ruleId === null;
+      let nullData = typeof this.message === "undefined" || this.message === null;
+      if (nullData) nullData = typeof this.ruleId === "undefined" || this.ruleId === null;
       else this.messageId = this.message._id;
       return nullData;
     },
@@ -473,9 +377,14 @@ export default {
     testRule() {
       // aggiorna configurazione
       this.updateFormData();
-      const httpService = new HttpMonitor();
+      const httpService = new HttpManager();
+      let info = getServiceInfo(TEST_RULE);
+      info.request = {
+        rule: this.rule,
+        message: this.message,
+      };
       httpService
-        .testMessageRule(this.rule, this.message)
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -483,11 +392,18 @@ export default {
           this.showModalTestRule = true;
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "testMessageRule");
+          showMsgErroreEsecuzione(this);
         });
     },
     getRule() {
       // get rule from message or form id
+
+      const httpService = new HttpManager();
+      let info = getServiceInfo(GET_RULES);
+      if (typeof idRule != "undefined" && idRule != null) queryParams.push({ key: "idRule", value: idRule });
+      else if (typeof idMessage != "undefined" && idMessage != null)
+        queryParams.push({ key: "idMessage", value: idMessage });
+      info.query.type = this.messageType;
 
       const httpService = new HttpMonitor();
       if (!this.checkNullInputData()) {
@@ -515,8 +431,7 @@ export default {
     validateRules(rules) {
       let outrule = [];
       for (let ix = 0; ix < rules.length; ix++)
-        if (typeof this.cfg.attrTypeProp[rules[ix].key] != "undefined")
-          outrule.push(rules[ix]);
+        if (typeof this.cfg.attrTypeProp[rules[ix].key] != "undefined") outrule.push(rules[ix]);
       return outrule;
     },
     // createConfigurationData() {
@@ -555,8 +470,7 @@ export default {
         //      }
         // create test modal strutture
         let r = {};
-        for (let ix = 0; ix < this.rule.rules.length; ix++)
-          r[this.rule.rules[ix].key] = this.rule.rules[ix];
+        for (let ix = 0; ix < this.rule.rules.length; ix++) r[this.rule.rules[ix].key] = this.rule.rules[ix];
         this.ruleByKey = r;
       }
     },

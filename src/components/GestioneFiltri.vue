@@ -243,10 +243,10 @@ export default {
               );
             }
             this.filterItems = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "getMessageFilter");
+          } else showMsgErroreEsecuzione(this); //, esito, "getMessageFilter");
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "getMessageFilter");
+          showMsgErroreEsecuzione(this); //, error, "getMessageFilter");
         });
     },
     getNotificationMessage() {
@@ -272,10 +272,10 @@ export default {
               datiServers.push({ key: dati[i] });
             }
             this.itemsAll = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "getNotificationMessage");
+          } else showMsgErroreEsecuzione(this); //, esito, "getNotificationMessage");
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "getNotificationMessage");
+          showMsgErroreEsecuzione(this); //, error, "getNotificationMessage");
         });
     },
     listMessages() {
@@ -315,10 +315,10 @@ export default {
               datiServers.push(entry);
             }
             this.itemsSampleMessages = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "listMessages");
+          } else showMsgErroreEsecuzione(this); //, esito, "listMessages");
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "listMessages");
+          showMsgErroreEsecuzione(this); //), error, "listMessages");
         });
     },
   },

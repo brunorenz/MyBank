@@ -4,17 +4,21 @@ export const LIST_MESSAGES = "listMessages";
 export const LOGIN = "login";
 export const DELETE_MESSAGEFILTER = "deleteMessageFilter";
 export const ADD_MESSAGEFILTER = "addMessageFilter";
-
-const ANALIZE_MESSAGES = "analizeMessages";
-const LIST_MOVEMENTS = "listAccountMovements";
-const GET_RULES = "getMessageRule";
+export const LIST_MOVEMENTS = "listAccountMovements";
+export const ANALIZE_MESSAGES = "analizeMessages";
+export const GET_RULES = "getMessageRule";
+export const GET_CONFIGURATION = "getMyBankConfiguration";
 const DELETE_RULE = "deleteMessageRule";
-const UPDATE_RULE = "updateMessageRule";
-const ADD_RULE = "addMessageRule";
-const TEST_RULE = "testMessageRule";
-const GET_CONFIGURATION = "getMyBankConfiguration";
+export const UPDATE_RULE = "updateMessageRule";
+export const ADD_RULE = "addMessageRule";
+export const TEST_RULE = "testMessageRule";
 
+const METHOD = { POST: 1, GET: 2 };
 import { getConfiguration } from "@/services/config";
+
+let serviceDefinition = function(url, method) {
+  return method === METHOD.POST ? serviceDefinitionPOST(url) : serviceDefinitionGET(url);
+};
 
 let serviceDefinitionPOST = function(url) {
   return {
@@ -38,11 +42,18 @@ let login = function() {
   return r;
 };
 const serviceConfiguration = {
-  getMessageFilter: () => serviceDefinitionGET(GET_MESSAGEFILTER),
-  getDistinctNotFilteredMessageSender: () => serviceDefinitionGET(GET_NOTIFICATIONMESSAGE),
-  listMessages: () => serviceDefinitionGET(LIST_MESSAGES),
-  addMessageFilter: () => serviceDefinitionPOST(ADD_MESSAGEFILTER),
-  deleteMessageFilter: () => serviceDefinitionPOST(DELETE_MESSAGEFILTER),
+  getMessageFilter: () => serviceDefinition(GET_MESSAGEFILTER, METHOD.GET),
+  getDistinctNotFilteredMessageSender: () => serviceDefinition(GET_NOTIFICATIONMESSAGE, METHOD.GET),
+  listMessages: () => serviceDefinition(LIST_MESSAGES, METHOD.GET),
+  addMessageFilter: () => serviceDefinition(ADD_MESSAGEFILTER, METHOD.POST),
+  deleteMessageFilter: () => serviceDefinition(DELETE_MESSAGEFILTER, METHOD.POST),
+  listAccountMovements: () => serviceDefinition(LIST_MOVEMENTS, METHOD.POST),
+  analizeMessages: () => serviceDefinition(ANALIZE_MESSAGES, METHOD.POST),
+  getMessageRule: () => serviceDefinition(GET_RULES, METHOD.GET),
+  getMyBankConfiguration: () => serviceDefinition(GET_CONFIGURATION, METHOD.GET),
+  testMessageRule: () => serviceDefinition(TEST_RULE, METHOD.POST),
+  updateMessageRule: () => serviceDefinition(UPDATE_RULE, METHOD.POST),
+  addMessageRule: () => serviceDefinition(ADD_RULE, METHOD.POST),
   login,
 };
 

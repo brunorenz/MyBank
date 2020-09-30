@@ -1,3 +1,5 @@
+const { default: store } = require("../store");
+
 let showMsgEsitoEsecuzione = function(obj, message) {
   let options = {
     title: "Esito Esecuzione Servizio",
@@ -16,12 +18,17 @@ let showMsgEsitoEsecuzione = function(obj, message) {
 exports.showMsgEsitoEsecuzione = showMsgEsitoEsecuzione;
 
 let showMsgErroreEsecuzione = function(obj, esito, funzione) {
-  let msg = esito;
-  if (typeof esito != "undefined" && typeof esito.code != "undefined") {
-    msg = "Return code : " + esito.code + " , Message : " + esito.message;
+  let msg = "";
+  if (esito === undefined) {
+    let error = store.getters.errorMessage;
+    msg = "Servizio " + error.function + " : Return code : " + error.code + " , Message : " + error.message;
+  } else {
+    msg = esito;
+    if (typeof esito != "undefined" && typeof esito.code != "undefined") {
+      msg = "Return code : " + esito.code + " , Message : " + esito.message;
+    }
+    if (typeof funzione != "undefined") msg = "Servizio " + funzione + " : " + msg;
   }
-  if (typeof funzione != "undefined")
-    msg = "Servizio " + funzione + " : " + msg;
   console.log(msg);
   let options = {
     title: "Errore Esecuzione Servizio",

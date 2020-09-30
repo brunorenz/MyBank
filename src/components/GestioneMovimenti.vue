@@ -3,27 +3,15 @@
     <b-card header="Filtro Ricerca">
       <b-row>
         <b-form-group label="Solo movimenti validi" class="col-sm-3">
-          <b-form-checkbox
-            id="msgAccepted"
-            v-model="msgAccepted"
-          ></b-form-checkbox>
+          <b-form-checkbox id="msgAccepted" v-model="msgAccepted"></b-form-checkbox>
         </b-form-group>
-        <b-form-group
-          label="Intervallo date"
-          id="fieldDateRange"
-          class="col-sm-3"
-        >
+        <b-form-group label="Intervallo date" id="fieldDateRange" class="col-sm-3">
           <div>
             <date-picker v-model="dateRange" type="month" range></date-picker>
           </div>
         </b-form-group>
       </b-row>
-      <b-button
-        variant="primary"
-        @click="searchMovements"
-        :disabled="dateRange === null"
-        >Aggiorna</b-button
-      >
+      <b-button variant="primary" @click="searchMovements" :disabled="dateRange === null">Aggiorna</b-button>
     </b-card>
     <b-card header="Movimenti Registrati">
       <b-table
@@ -60,10 +48,7 @@
       </b-table>
       <b-card-text v-if="itemsAll.length > 0">
         <h5>Importo Totale dei movimenti selezionati {{ this.totale }}</h5>
-        <b-button
-          variant="primary"
-          @click="searchMovements"
-          :disabled="selectedMessage.length === 0"
+        <b-button variant="primary" @click="searchMovements" :disabled="selectedMessage.length === 0"
           >Dettaglio</b-button
         >
       </b-card-text>
@@ -72,15 +57,12 @@
 </template>
 
 <script>
-import HttpMonitor from "@/services/httpMonitorRest";
+import HttpManager from "@/services/HttpManager";
+import { LIST_MOVEMENTS, getServiceInfo } from "@/services/restServices";
 import DatePicker from "vue2-datepicker";
 import "vue2-datepicker/index.css";
 import "vue2-datepicker/locale/it";
-import {
-  showMsgEsitoEsecuzione,
-  showMsgErroreEsecuzione,
-  showConfirmationMessage,
-} from "@/services/utilities";
+import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 
 export default {
   name: "GestioneMovimenti",
@@ -143,7 +125,6 @@ export default {
     },
     searchMovements() {
       this.isAccountMovementsBusy = true;
-      const httpService = new HttpMonitor();
       let input = {
         dateTo: this.$moment(this.dateRange[1]).format("DD/MM/YYYY"),
         dateFrom: this.$moment(this.dateRange[0]).format("DD/MM/YYYY"),
@@ -181,8 +162,11 @@ export default {
         }
       );
       let totale = 0;
+      const httpService = new HttpManager();
+      let info = getServiceInfo(LIST_MOVEMENTS);
+      info.request = input;
       httpService
-        .listAccountMovements(input)
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -194,17 +178,10 @@ export default {
               let d = dati[i];
               //TODO leggere da configurazione
               let dType = "Pos";
-              if (typeof d.bancomat != "undefined" && d.bancomat)
-                dType = "Bancomat";
-              else if (typeof d.cartacredito != "undefined" && d.cartacredito)
-                dType = "Carta di Credito";
-              else if (
-                typeof d.accreditoconto != "undefined" &&
-                d.accreditoconto
-              )
-                dType = "Accredito C/C";
-              else if (typeof d.addebitoconto != "undefined" && d.addebitoconto)
-                dType = "Addebito C/C";
+              if (typeof d.bancomat != "undefined" && d.bancomat) dType = "Bancomat";
+              else if (typeof d.cartacredito != "undefined" && d.cartacredito) dType = "Carta di Credito";
+              else if (typeof d.accreditoconto != "undefined" && d.accreditoconto) dType = "Accredito C/C";
+              else if (typeof d.addebitoconto != "undefined" && d.addebitoconto) dType = "Addebito C/C";
               let entry = {
                 date: typeof d.data === "undefined" ? d.messageDate : d.data,
                 importo: d.importo,
@@ -219,12 +196,12 @@ export default {
               datiServers.push(entry);
             }
             this.itemsAll = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "listAccountMovements");
+          } else showMsgErroreEsecuzione(this);
           this.isAccountMovementsBusy = false;
           this.totale = this.formatImporto(totale);
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "listAccountMovements");
+          showMsgErroreEsecuzione(this);
           this.isAccountMovementsBusy = true;
           this.totale = this.formatImporto(totale);
         });

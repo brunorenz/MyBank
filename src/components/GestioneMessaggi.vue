@@ -11,11 +11,7 @@
               @input="changeType"
             ></b-form-radio-group>
           </b-form-group>
-          <b-form-group
-            label="Escludi numeri telefonici"
-            class="col-sm-3"
-            :disabled="messageType != 'SMS'"
-          >
+          <b-form-group label="Escludi numeri telefonici" class="col-sm-3" :disabled="messageType != 'SMS'">
             <b-form-checkbox
               id="excludeNumberId"
               v-model="excludeNumber"
@@ -81,17 +77,13 @@
           </template>
         </b-table>
         <b-row class="ml-0" v-if="isRuleDefined === false">
-          <b-button variant="primary" @click="manageRule(true)"
-            >Aggiungi Regola</b-button
-          >
+          <b-button variant="primary" @click="manageRule(true)">Aggiungi Regola</b-button>
         </b-row>
         <b-row class="ml-0" v-if="isRuleDefined === true">
           <b-button
             variant="primary"
             @click="manageRule(false)"
-            :disabled="
-              messageType === 'PUSH' && sampleMessagesSelected.length != 1
-            "
+            :disabled="messageType === 'PUSH' && sampleMessagesSelected.length != 1"
             >Gestisci Regola</b-button
           >
           <b-button
@@ -119,21 +111,22 @@
       </b-card>
     </b-collapse>
     <b-card :header="headerDetail" v-if="ruleShow === true">
-      <ruleDefinition
-        :message="selectedMessage"
-        v-on:updateRules="updateRules"
-      ></ruleDefinition>
+      <ruleDefinition :message="selectedMessage" v-on:updateRules="updateRules"></ruleDefinition>
     </b-card>
   </div>
 </template>
 
 <script>
-import HttpMonitor from "@/services/httpMonitorRest";
+//import HttpMonitor from "@/services/httpMonitorRest";
+import HttpManager from "@/services/HttpManager";
 import {
-  showMsgEsitoEsecuzione,
-  showMsgErroreEsecuzione,
-  showConfirmationMessage,
-} from "@/services/utilities";
+  LIST_MESSAGES,
+  GET_RULES,
+  ANALIZE_MESSAGES,
+  GET_NOTIFICATIONMESSAGE,
+  getServiceInfo,
+} from "@/services/restServices";
+import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 import RuleDefinitionForm from "@/components/common/RuleDefinitionForm";
 
 export default {
@@ -143,9 +136,7 @@ export default {
   },
   computed: {
     headerDetail: function() {
-      let msg =
-        "Dettaglio regola per " +
-        (this.messageType === "SMS" ? "messaggio SMS" : "notifica PUSH");
+      let msg = "Dettaglio regola per " + (this.messageType === "SMS" ? "messaggio SMS" : "notifica PUSH");
 
       return msg;
     },
@@ -191,8 +182,7 @@ export default {
     manageRule(add) {
       console.log("Add rule : " + add);
       let msg = null;
-      if (this.sampleMessagesSelected.length === 0)
-        msg = this.sampleMessagesItems[0].fullMessage;
+      if (this.sampleMessagesSelected.length === 0) msg = this.sampleMessagesItems[0].fullMessage;
       else msg = this.sampleMessagesSelected[0].fullMessage;
       //msg.type = this.messageType;
       this.selectedMessage = msg;
@@ -234,20 +224,18 @@ export default {
       this.$refs.sampleMessages.clearSelected();
     },
     processMessages() {
-      showConfirmationMessage(
-        this,
-        "Confermi l'analisi dei messaggi selezionati ?",
-        this.processSelectedMessages
-      );
+      showConfirmationMessage(this, "Confermi l'analisi dei messaggi selezionati ?", this.processSelectedMessages);
     },
     processSelectedMessages() {
       let msgIds = [];
       for (let ix = 0; ix < this.sampleMessagesSelected.length; ix++) {
         msgIds.push(this.sampleMessagesSelected[ix]["fullMessage"]["_id"]);
       }
-      const httpService = new HttpMonitor();
+      const httpService = new HttpManager();
+      let info = getServiceInfo(ANALIZE_MESSAGES);
+      info.service = { msgIds: msgIds };
       httpService
-        .analizeMessages({ msgIds: msgIds })
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -261,37 +249,28 @@ export default {
               notFound += msgs[ix].found ? 0 : 1;
               notAccepted += msgs[ix].accepted ? 0 : 1;
             }
-            console.log(
-              "Not found : " +
-                notFound +
-                " - Accepted " +
-                accepted +
-                " - Not accepted " +
-                notAccepted
-            );
+            console.log("Not found : " + notFound + " - Accepted " + accepted + " - Not accepted " + notAccepted);
             showMsgEsitoEsecuzione(
               this,
               `Non trovati : ${notFound} - Accettati : ${accepted} - Non accettati : ${notAccepted}`
             );
-          } else showMsgErroreEsecuzione(this, esito, "analizeMessages");
+          } else showMsgErroreEsecuzione(this);
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "analizeMessages");
+          showMsgErroreEsecuzione(this);
         });
     },
     getNotificationMessage() {
       this.isReceivedMessageBusy = true;
-      this.receivedMessageHeaderLabel =
-        "Messaggi " + this.messageType + " Ricevuti";
-      const httpService = new HttpMonitor();
-      //let type = this.$route.query.type;
+      this.receivedMessageHeaderLabel = "Messaggi " + this.messageType + " Ricevuti";
       let isSMS = this.messageType === "SMS";
       let label = isSMS ? "Origine messaggio" : "Nome pacchetto notifica";
-      this.receivedMessageFields = [
-        { key: "key", label: label, sortable: true },
-      ];
+      this.receivedMessageFields = [{ key: "key", label: label, sortable: true }];
+      const httpService = new HttpManager();
+      let info = getServiceInfo(GET_NOTIFICATIONMESSAGE);
+      info.query.type = this.messageType;
       httpService
-        .getNotificationMessage(this.messageType)
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;
@@ -303,16 +282,15 @@ export default {
                 let s = isNaN(dati[i]);
                 //console.log("String : " + s + " -> " + dati[i]);
                 if (s) datiServers.push({ key: dati[i] });
-                else if (!this.excludeNumber)
-                  datiServers.push({ key: dati[i] });
+                else if (!this.excludeNumber) datiServers.push({ key: dati[i] });
               } else datiServers.push({ key: dati[i] });
             }
             this.receivedMessageItems = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "getNotificationMessage");
+          } else showMsgErroreEsecuzione(this);
           this.isReceivedMessageBusy = false;
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "getNotificationMessage");
+          showMsgErroreEsecuzione(this);
           this.isReceivedMessageBusy = false;
         });
     },
@@ -322,17 +300,21 @@ export default {
       let isSMS = this.messageType === "SMS";
       this.isSampleMessagesBusy = true;
       let self = this;
-      const httpService = new HttpMonitor();
+      const httpService = new HttpManager();
       let selectedRecord = this.receivedMessageSelected[0];
       let alP = [];
       let p1 = new Promise(function(resolve, reject) {
         console.log("Promise P1!");
+        let info = getServiceInfo(GET_RULES);
+        info.query.type = {
+          type: self.messageType,
+        };
+        if (selectedRecord.key != undefined) {
+          info.query.key = selectedRecord.key;
+          if (selectedRecord.key2 != undefined) info.query.key2 = selectedRecord.key2;
+        }
         httpService
-          .getMessageRule(
-            self.messageType,
-            selectedRecord.key,
-            selectedRecord.key2
-          )
+          .callNodeServer(info)
           .then((response) => {
             resolve(response.data);
           })
@@ -341,13 +323,9 @@ export default {
           });
       });
       this.sampleMessagesHeaderLabel =
-        (isSMS
-          ? "Dettaglio messaggi SMS ricevuti da "
-          : "Dettaglio notifiche PUSH ricevute da ") +
+        (isSMS ? "Dettaglio messaggi SMS ricevuti da " : "Dettaglio notifiche PUSH ricevute da ") +
         this.receivedMessageSelected[0].key;
-      this.sampleMessagesFields = [
-        { key: "date", label: "Data", sortable: true },
-      ];
+      this.sampleMessagesFields = [{ key: "date", label: "Data", sortable: true }];
       if (!isSMS)
         this.sampleMessagesFields.push({
           key: "fullMessage.sender",
@@ -361,8 +339,11 @@ export default {
       });
       let p2 = new Promise(function(resolve, reject) {
         console.log("Promise P2!");
+        let info = getServiceInfo(LIST_MESSAGES);
+        info.query.type = self.messageType;
+        info.query.filter = selectedRecord.key;
         httpService
-          .listMessages(self.messageType, selectedRecord.key)
+          .callNodeServer(info)
           .then((response) => {
             resolve(response.data);
           })
@@ -390,9 +371,7 @@ export default {
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               let entry = {
-                date: self
-                  .$moment(new Date(dati[i].time))
-                  .format("DD/MM/YY HH:MM"),
+                date: self.$moment(new Date(dati[i].time)).format("DD/MM/YY HH:MM"),
                 //_id: dati[i]._id,
                 fullMessage: dati[i],
               };
@@ -401,12 +380,12 @@ export default {
               datiServers.push(entry);
             }
             self.sampleMessagesItems = datiServers;
-          } else showMsgErroreEsecuzione(self, esito, "listMessages");
+          } else showMsgErroreEsecuzione(self);
 
           self.isSampleMessagesBusy = false;
         })
         .catch(function(error) {
-          showMsgErroreEsecuzione(self, error, "listMessages");
+          showMsgErroreEsecuzione(self);
           self.isSampleMessagesBusy = false;
         });
     },
