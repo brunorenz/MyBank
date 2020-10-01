@@ -397,18 +397,13 @@ export default {
     },
     getRule() {
       // get rule from message or form id
-
       const httpService = new HttpManager();
       let info = getServiceInfo(GET_RULES);
-      if (typeof idRule != "undefined" && idRule != null) queryParams.push({ key: "idRule", value: idRule });
-      else if (typeof idMessage != "undefined" && idMessage != null)
-        queryParams.push({ key: "idMessage", value: idMessage });
-      info.query.type = this.messageType;
-
-      const httpService = new HttpMonitor();
+      if (typeof idRule != "undefined" && this.idRule != null) info.query.idRule = this.idRule;
+      else if (typeof idMessage != "undefined" && this.idMessage != null) info.query.idMessage = this.idMessage;
       if (!this.checkNullInputData()) {
         httpService
-          .getMessageRuleById(this.ruleId, this.messageId)
+          .callNodeServer(info)
           .then((response) => {
             var data = response.data;
             let esito = data.error;
@@ -420,11 +415,11 @@ export default {
                 this.savedRule = JSON.stringify(this.rule);
               } else this.confermaNuovaRegola();
             } else {
-              showMsgErroreEsecuzione(this, esito, "getMessageRuleById");
+              showMsgErroreEsecuzione(this);
             }
           })
           .catch((error) => {
-            showMsgErroreEsecuzione(this, error, "getMessageRuleById");
+            showMsgErroreEsecuzione(this);
           });
       }
     },

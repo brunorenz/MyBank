@@ -51,7 +51,6 @@
 </template>
 
 <script>
-//import HttpServer from "@/services/httpMonitorRest";
 import router from "@/router";
 import HttpManager from "@/services/HttpManager";
 import { LOGIN, getServiceInfo } from "@/services/restServices";

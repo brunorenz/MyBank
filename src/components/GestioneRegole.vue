@@ -40,21 +40,15 @@
       </b-card>
     </b-collapse>
     <b-card :header="headerDetail" v-if="ruleDetailShow">
-      <ruleDefinition
-        :ruleId="ruleSelectedId"
-        v-on:updateRules="updateRules"
-      ></ruleDefinition>
+      <ruleDefinition :ruleId="ruleSelectedId" v-on:updateRules="updateRules"></ruleDefinition>
     </b-card>
   </div>
 </template>
 
 <script>
-import HttpMonitor from "@/services/httpMonitorRest";
-import {
-  showMsgEsitoEsecuzione,
-  showMsgErroreEsecuzione,
-  showConfirmationMessage,
-} from "@/services/utilities";
+import HttpManager from "@/services/HttpManager";
+import { GET_RULES, getServiceInfo } from "@/services/restServices";
+import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 import RuleDefinitionForm from "@/components/common/RuleDefinitionForm";
 
 export default {
@@ -85,9 +79,7 @@ export default {
   },
   computed: {
     headerDetail: function() {
-      let msg =
-        "Dettaglio regola per " +
-        (this.messageType === "SMS" ? "messaggio SMS" : "notifica PUSH");
+      let msg = "Dettaglio regola per " + (this.messageType === "SMS" ? "messaggio SMS" : "notifica PUSH");
 
       return msg;
     },
@@ -110,32 +102,20 @@ export default {
     },
     updateRule(confirm) {
       if (typeof confirm != "undefined")
-        showConfirmationMessage(
-          this,
-          "Confermi l'aggiornamento della regola' ?",
-          this.updateRule
-        );
+        showConfirmationMessage(this, "Confermi l'aggiornamento della regola' ?", this.updateRule);
       else {
         console.log("Aggiorna regola !!");
       }
     },
     deleteRule(confirm) {
       if (typeof confirm != "undefined") {
-        showConfirmationMessage(
-          this,
-          "Confermi la cancellazione della regola ?",
-          this.deleteRule
-        );
+        showConfirmationMessage(this, "Confermi la cancellazione della regola ?", this.deleteRule);
       } else {
         console.log("Elimina regola !!");
       }
     },
     addMessageMsgBox() {
-      showConfirmationMessage(
-        this,
-        "Confermi l'inserimento ?",
-        this.addMessage
-      );
+      showConfirmationMessage(this, "Confermi l'inserimento ?", this.addMessage);
     },
     onRulesRowSelected(items) {
       this.rulesSelected = items;
@@ -153,19 +133,13 @@ export default {
       this.$refs.rules.clearSelected();
     },
     processMessages() {
-      showConfirmationMessage(
-        this,
-        "Confermi l'analisi dei messaggi selezionati ?",
-        this.processSelectedMessages
-      );
+      showConfirmationMessage(this, "Confermi l'analisi dei messaggi selezionati ?", this.processSelectedMessages);
     },
 
     getRules() {
       this.isRulesBusy = true;
       let isSMS = this.messageType === "SMS";
-      this.rulesHeaderLabel =
-        "Regole per  " + (isSMS ? "messaggi SMS" : "notifiche PUSH");
-      const httpService = new HttpMonitor();
+      this.rulesHeaderLabel = "Regole per  " + (isSMS ? "messaggi SMS" : "notifiche PUSH");
       let label = isSMS ? "Origine messaggio" : "Nome pacchetto notifica";
       let field = [{ key: "key", label: label, sortable: true }];
       if (!isSMS) {
@@ -173,8 +147,11 @@ export default {
       }
       field.push({ key: "bankId", label: "Banca", sortable: true });
       this.rulesFields = field;
-      httpService
-        .getMessageRule(this.messageType)
+      //const httpService = new HttpManager();
+      let info = getServiceInfo(GET_RULES);
+      info.query.type = this.messageType;
+      new HttpManager()
+        .callNodeServer(info)
         .then((response) => {
           var data = response.data;
           let esito = data.error;

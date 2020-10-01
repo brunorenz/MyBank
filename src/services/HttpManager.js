@@ -2,9 +2,7 @@ import { mainAxios } from "@/services/axiosInstance";
 import { getConfiguration } from "@/services/config";
 import { SecurityConfiguration } from "@/services/security";
 
-import { validateRequest } from "./httpRestManager";
-
-//
+let validateRequest = function(serviceContext) {};
 
 export default class HttpManager {
   constructor() {

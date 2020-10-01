@@ -117,7 +117,6 @@
 </template>
 
 <script>
-//import HttpMonitor from "@/services/httpMonitorRest";
 import HttpManager from "@/services/HttpManager";
 import {
   LIST_MESSAGES,
