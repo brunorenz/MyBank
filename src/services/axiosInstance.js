@@ -1,7 +1,6 @@
 import axios from "axios";
 import { doLogoff } from "@/services/security";
 import router from "@/router";
-import storer from "@/store";
 import store from "@/store";
 
 const mainAxios = axios.create();
@@ -17,7 +16,6 @@ let getFunctionFromUrl = function(url) {
 // Add a response interceptor
 mainAxios.interceptors.response.use(
   function(response) {
-    debugger;
     try {
       if (typeof response.data.error != "undefined") {
         console.log("(MAIN) Return code : " + response.data.error.code + " , Message : " + response.data.error.message);
@@ -34,7 +32,6 @@ mainAxios.interceptors.response.use(
     return response;
   },
   function(error) {
-    debugger;
     try {
       let message = error.toJSON().message;
       let errorM = {
@@ -58,6 +55,4 @@ mainAxios.interceptors.response.use(
   }
 );
 
-const oldAxios = axios.create();
-
-export { mainAxios, oldAxios };
+export { mainAxios };
