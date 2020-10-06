@@ -9,7 +9,11 @@ import "./registerServiceWorker";
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
 Vue.use(require("vue-moment"));
-//Vue.use(CoreuiVue);
+//Vue.use(require("vue-cryptojs"));
+
+import CryptoJS from "crypto-js";
+Object.defineProperty(Vue.prototype, "$crypto", { value: CryptoJS });
+
 Vue.config.productionTip = false;
 
 new Vue({

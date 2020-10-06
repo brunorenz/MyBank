@@ -305,9 +305,7 @@ export default {
       let p1 = new Promise(function(resolve, reject) {
         console.log("Promise P1!");
         let info = getServiceInfo(GET_RULES);
-        info.query.type = {
-          type: self.messageType,
-        };
+        info.query.type = self.messageType;
         if (selectedRecord.key != undefined) {
           info.query.key = selectedRecord.key;
           if (selectedRecord.key2 != undefined) info.query.key2 = selectedRecord.key2;

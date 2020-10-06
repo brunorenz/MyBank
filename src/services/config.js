@@ -1,6 +1,6 @@
 //import { CustomTooltips } from "@coreui/coreui-plugin-chartjs-custom-tooltips";
 
-const local = true;
+const local = false;
 const remoteNodeServer = true;
 const urlApp = "mybank/rest/";
 const urlSecurity = "security/rest/";
@@ -12,9 +12,7 @@ const urlSecurity = "security/rest/";
 //   ? "http://localhost:8102/mybank/rest/"
 //   : serverUrlRemote;
 const serverUrlP = "/";
-const serverUrlRemote = remoteNodeServer
-  ? "https://mybank.65bruno.it/"
-  : "http://192.168.0.101:8102/";
+const serverUrlRemote = remoteNodeServer ? "https://mybank.65bruno.it/" : "http://192.168.0.101:8102/";
 const serverUrlD = local ? "http://localhost:8102/" : serverUrlRemote;
 
 const weatherUrl =

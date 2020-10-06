@@ -37,7 +37,8 @@
     "chart.js": "^2.9.3",
     "jquery": "^3.5.1",
     "font-awesome": "^4.7.0",
-    "vue-moment": "^4.1.0"
+    "vue-moment": "^4.1.0",
+    "crypto-js": "^4.0.0"
   },
   "engines": {
     "node": ">= 8.10.x",

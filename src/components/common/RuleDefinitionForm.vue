@@ -399,8 +399,8 @@ export default {
       // get rule from message or form id
       const httpService = new HttpManager();
       let info = getServiceInfo(GET_RULES);
-      if (typeof idRule != "undefined" && this.idRule != null) info.query.idRule = this.idRule;
-      else if (typeof idMessage != "undefined" && this.idMessage != null) info.query.idMessage = this.idMessage;
+      if (typeof this.idRule != "undefined" && this.idRule != null) info.query.idRule = this.idRule;
+      else if (typeof this.idMessage != "undefined" && this.idMessage != null) info.query.idMessage = this.idMessage;
       if (!this.checkNullInputData()) {
         httpService
           .callNodeServer(info)

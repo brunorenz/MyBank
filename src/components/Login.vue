@@ -77,9 +77,11 @@ export default {
       e.preventDefault();
       const httpService = new HttpManager();
       let info = getServiceInfo(LOGIN);
+      let hash = this.$crypto.MD5(this.password);
       info.request = {
         email: this.email,
         password: this.password,
+        passwordMd5: hash.toString(this.$crypto.enc.Hex).toUpperCase(),
         application: "MyBank",
       };
 

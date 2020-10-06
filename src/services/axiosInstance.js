@@ -35,10 +35,16 @@ mainAxios.interceptors.response.use(
     try {
       let message = error.toJSON().message;
       let errorM = {
-        code: error.response.status,
-        message: message + " - " + error.response.statusText,
-        function: getFunctionFromUrl(error.response.config.url),
+        code: 999,
+        message: message,
+        function: getFunctionFromUrl(error.config.url),
       };
+      if (error.response)
+        errorM = {
+          code: error.response.status,
+          message: message + " - " + error.response.statusText,
+          function: getFunctionFromUrl(error.config.url),
+        };
       store.commit("errorMessage", errorM);
     } catch (error) {
       console.log(error);
