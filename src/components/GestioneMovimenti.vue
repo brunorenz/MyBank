@@ -201,7 +201,7 @@ export default {
           this.totale = this.formatImporto(totale);
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this);
+          showMsgErroreEsecuzione(this, error);
           this.isAccountMovementsBusy = true;
           this.totale = this.formatImporto(totale);
         });

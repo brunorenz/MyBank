@@ -37,6 +37,9 @@
             </div>
           </template>
         </b-table>
+        <b-row class="ml-0">
+          <b-button variant="primary" @click="exportRule(true)">Esporta Regole</b-button>
+        </b-row>
       </b-card>
     </b-collapse>
     <b-card :header="headerDetail" v-if="ruleDetailShow">
@@ -47,7 +50,7 @@
 
 <script>
 import HttpManager from "@/services/HttpManager";
-import { GET_RULES, getServiceInfo } from "@/services/restServices";
+import { GET_RULES, EXPORT_RULES, getServiceInfo } from "@/services/restServices";
 import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 import RuleDefinitionForm from "@/components/common/RuleDefinitionForm";
 
@@ -80,12 +83,41 @@ export default {
   computed: {
     headerDetail: function() {
       let msg = "Dettaglio regola per " + (this.messageType === "SMS" ? "messaggio SMS" : "notifica PUSH");
-
       return msg;
     },
   },
   beforeUpdate: function() {},
   methods: {
+    exportRule(confirm) {
+      if (typeof confirm != "undefined")
+        showConfirmationMessage(this, "Confermi l'export delle regole ?", this.exportRule);
+      else {
+        console.log("Esporta Regole !!");
+        let info = getServiceInfo(EXPORT_RULES);
+        info.query.type = this.messageType;
+        new HttpManager()
+          .callNodeServer(info)
+          .then((response) => {
+            var data = response.data;
+            let esito = data.error;
+            if (esito.code === 0) {
+              let dati = data.data;
+              let today = this.$moment(new Date()).format("DDMMYYYY");
+              const blob = new Blob([JSON.stringify(dati)], { type: "text/plain" });
+              const e = document.createEvent("MouseEvents");
+              const a = document.createElement("a");
+              a.download = "Regole_" + this.messageType + "_" + today + ".json";
+              a.href = window.URL.createObjectURL(blob);
+              a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
+              e.initEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+              a.dispatchEvent(e);
+            } else showMsgErroreEsecuzione(this);
+          })
+          .catch((error) => {
+            showMsgErroreEsecuzione(this, error);
+          });
+      }
+    },
     changeType(name) {
       this.reloadAndClear();
     },
@@ -100,23 +132,23 @@ export default {
       this.deselectRules();
       this.getRules();
     },
-    updateRule(confirm) {
-      if (typeof confirm != "undefined")
-        showConfirmationMessage(this, "Confermi l'aggiornamento della regola' ?", this.updateRule);
-      else {
-        console.log("Aggiorna regola !!");
-      }
-    },
-    deleteRule(confirm) {
-      if (typeof confirm != "undefined") {
-        showConfirmationMessage(this, "Confermi la cancellazione della regola ?", this.deleteRule);
-      } else {
-        console.log("Elimina regola !!");
-      }
-    },
-    addMessageMsgBox() {
-      showConfirmationMessage(this, "Confermi l'inserimento ?", this.addMessage);
-    },
+    // updateRule(confirm) {
+    //   if (typeof confirm != "undefined")
+    //     showConfirmationMessage(this, "Confermi l'aggiornamento della regola' ?", this.updateRule);
+    //   else {
+    //     console.log("Aggiorna regola !!");
+    //   }
+    // },
+    // deleteRule(confirm) {
+    //   if (typeof confirm != "undefined") {
+    //     showConfirmationMessage(this, "Confermi la cancellazione della regola ?", this.deleteRule);
+    //   } else {
+    //     console.log("Elimina regola !!");
+    //   }
+    // },
+    // addMessageMsgBox() {
+    //   showConfirmationMessage(this, "Confermi l'inserimento ?", this.addMessage);
+    // },
     onRulesRowSelected(items) {
       this.rulesSelected = items;
       if (items.length === 0) {
@@ -172,11 +204,11 @@ export default {
               datiServers.push(record);
             }
             this.rulesItems = datiServers;
-          } else showMsgErroreEsecuzione(this, esito, "getMessageRule");
+          } else showMsgErroreEsecuzione(this);
           this.isRulesBusy = false;
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this, error, "getMessageRule");
+          showMsgErroreEsecuzione(this, error);
           this.isRulesBusy = false;
         });
     },

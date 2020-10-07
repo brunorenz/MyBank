@@ -1,6 +1,6 @@
 //import { CustomTooltips } from "@coreui/coreui-plugin-chartjs-custom-tooltips";
 
-const local = false;
+const local = true;
 const remoteNodeServer = true;
 const urlApp = "mybank/rest/";
 const urlSecurity = "security/rest/";

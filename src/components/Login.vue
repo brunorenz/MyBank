@@ -108,10 +108,10 @@ export default {
             }
           })
           .catch((error) => {
-            showMsgErroreEsecuzione(this);
+            showMsgErroreEsecuzione(this, error);
           });
       } catch (error) {
-        showMsgErroreEsecuzione(this.error);
+        showMsgErroreEsecuzione(this, error);
       }
     },
   },

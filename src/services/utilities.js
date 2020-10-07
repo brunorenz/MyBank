@@ -22,6 +22,8 @@ let showMsgErroreEsecuzione = function(obj, esito, funzione) {
   if (esito === undefined) {
     let error = store.getters.errorMessage;
     msg = "Servizio " + error.function + " : Return code : " + error.code + " , Message : " + error.message;
+  } else if (esito instanceof Error) {
+    msg = esito.message;
   } else {
     msg = esito;
     if (typeof esito != "undefined" && typeof esito.code != "undefined") {

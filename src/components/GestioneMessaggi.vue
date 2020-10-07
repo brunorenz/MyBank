@@ -256,7 +256,7 @@ export default {
           } else showMsgErroreEsecuzione(this);
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this);
+          showMsgErroreEsecuzione(this, error);
         });
     },
     getNotificationMessage() {
@@ -289,7 +289,7 @@ export default {
           this.isReceivedMessageBusy = false;
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this);
+          showMsgErroreEsecuzione(this, error);
           this.isReceivedMessageBusy = false;
         });
     },
@@ -382,7 +382,7 @@ export default {
           self.isSampleMessagesBusy = false;
         })
         .catch(function(error) {
-          showMsgErroreEsecuzione(self);
+          showMsgErroreEsecuzione(self, error);
           self.isSampleMessagesBusy = false;
         });
     },

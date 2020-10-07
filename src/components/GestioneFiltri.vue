@@ -188,6 +188,7 @@ export default {
         })
         .catch((error) => {
           console.log("Error callig service 'addMessageFilter' : " + error);
+          showMsgErroreEsecuzione(this);
         });
     },
     deleteMessage() {
@@ -202,6 +203,7 @@ export default {
         })
         .catch((error) => {
           console.log("Error callig service 'deleteMessageFilter' : " + error);
+          showMsgErroreEsecuzione(this, error);
         });
     },
     reloadAndClear() {
@@ -246,7 +248,7 @@ export default {
           } else showMsgErroreEsecuzione(this); //, esito, "getMessageFilter");
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this); //, error, "getMessageFilter");
+          showMsgErroreEsecuzione(this, error); //, error, "getMessageFilter");
         });
     },
     getNotificationMessage() {
@@ -275,7 +277,7 @@ export default {
           } else showMsgErroreEsecuzione(this); //, esito, "getNotificationMessage");
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this); //, error, "getNotificationMessage");
+          showMsgErroreEsecuzione(this, error); //, error, "getNotificationMessage");
         });
     },
     listMessages() {
@@ -318,7 +320,7 @@ export default {
           } else showMsgErroreEsecuzione(this); //, esito, "listMessages");
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this); //), error, "listMessages");
+          showMsgErroreEsecuzione(this, error); //), error, "listMessages");
         });
     },
   },

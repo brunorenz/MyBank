@@ -208,7 +208,6 @@ export default {
   },
   mounted: function() {
     console.log(">>>> RuleDefinitionForm : mounted");
-
     this.getRule();
   },
   beforeUpdate: function() {
@@ -251,7 +250,7 @@ export default {
             } else showMsgErroreEsecuzione(this);
           })
           .catch((error) => {
-            showMsgErroreEsecuzione(this);
+            showMsgErroreEsecuzione(this, error);
           });
       }
     },
@@ -301,7 +300,7 @@ export default {
           }
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this);
+          showMsgErroreEsecuzione(this, error);
         });
     },
     annulla(confirm) {
@@ -392,16 +391,17 @@ export default {
           this.showModalTestRule = true;
         })
         .catch((error) => {
-          showMsgErroreEsecuzione(this);
+          showMsgErroreEsecuzione(this, error);
         });
     },
     getRule() {
       // get rule from message or form id
-      const httpService = new HttpManager();
-      let info = getServiceInfo(GET_RULES);
-      if (typeof this.idRule != "undefined" && this.idRule != null) info.query.idRule = this.idRule;
-      else if (typeof this.idMessage != "undefined" && this.idMessage != null) info.query.idMessage = this.idMessage;
+      // this.ruleId, this.messageId
       if (!this.checkNullInputData()) {
+        const httpService = new HttpManager();
+        let info = getServiceInfo(GET_RULES);
+        if (typeof this.ruleId != "undefined" && this.ruleId != null) info.query.idRule = this.ruleId;
+        else if (typeof this.messageId != "undefined" && this.messageId != null) info.query.idMessage = this.messageId;
         httpService
           .callNodeServer(info)
           .then((response) => {
@@ -419,7 +419,7 @@ export default {
             }
           })
           .catch((error) => {
-            showMsgErroreEsecuzione(this);
+            showMsgErroreEsecuzione(this, error);
           });
       }
     },
