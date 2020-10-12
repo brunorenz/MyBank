@@ -232,7 +232,7 @@ export default {
       }
       const httpService = new HttpManager();
       let info = getServiceInfo(ANALIZE_MESSAGES);
-      info.service = { msgIds: msgIds };
+      info.request = { msgIds: msgIds };
       httpService
         .callNodeServer(info)
         .then((response) => {

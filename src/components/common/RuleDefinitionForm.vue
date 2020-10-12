@@ -268,7 +268,7 @@ export default {
             let d = data.data;
             for (let ix = 0; ix < d.accounts.length; ix++) {
               a.push({
-                value: d.accounts[ix].account,
+                value: d.accounts[ix].bankKey,
                 text: d.accounts[ix].bankName + " - " + d.accounts[ix].description,
               });
             }
