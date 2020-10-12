@@ -30,6 +30,7 @@
           <b-dropdown-item to="/gestioneFiltri">Filtri</b-dropdown-item>
           <b-dropdown-item to="/gestioneMessaggi">Messaggi</b-dropdown-item>
           <b-dropdown-item to="/gestioneRegole">Regole</b-dropdown-item>
+          <b-dropdown-item to="/gestioneCategorie">Esercenti e Categorie</b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item class="px-3" to="/gestioneMovimenti"
           >Gestione Movimenti</b-nav-item
@@ -178,6 +179,14 @@ export default {
               name: "Regole",
               url: "/gestioneRegole",
               icon: "fa fa-handshake-o",
+              badge: {
+                variant: "primary",
+              },
+            },
+            {
+              name: "Esercenti e Categorie",
+              url: "/gestioneCategorie",
+              icon: "fa fa-sitemap",
               badge: {
                 variant: "primary",
               },

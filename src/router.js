@@ -54,6 +54,7 @@ let router = new VueRouter({
         route("/gestioneMessaggi", "GestioneMessaggi"),
         route("/gestioneMovimenti", "GestioneMovimenti"),
         route("/gestioneRegole", "GestioneRegole"),
+        route("/gestioneCategorie", "GestioneCategorie"),
       ],
     },
     route("/404", "NotFound", true),

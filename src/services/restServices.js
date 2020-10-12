@@ -14,6 +14,7 @@ const DELETE_RULE = "deleteMessageRule";
 export const UPDATE_RULE = "updateMessageRule";
 export const ADD_RULE = "addMessageRule";
 export const TEST_RULE = "testMessageRule";
+export const GET_ESERCENTICATEGORIE = "getMerchantsCategory"
 
 const METHOD = { POST: 1, GET: 2 };
 import { getConfiguration } from "@/services/config";
@@ -58,6 +59,7 @@ const serviceConfiguration = {
   updateMessageRule: () => serviceDefinition(UPDATE_RULE, METHOD.POST),
   addMessageRule: () => serviceDefinition(ADD_RULE, METHOD.POST),
   getDistinctMerchant: () => serviceDefinition(GET_ESERCENTI, METHOD.GET),
+  getMerchantsCategory: () => serviceDefinition(GET_ESERCENTICATEGORIE, METHOD.GET),
   login,
 };
 
