@@ -9,12 +9,12 @@ export const ANALIZE_MESSAGES = "analizeMessages";
 export const GET_RULES = "getMessageRule";
 export const EXPORT_RULES = "exportMessageRule";
 export const GET_CONFIGURATION = "getMyBankConfiguration";
-export const GET_ESERCENTI = "getDistinctMerchant";
+export const GET_ESERCENTISENZACATEGORIE = "getMerchantsWithoutCategory";
 const DELETE_RULE = "deleteMessageRule";
 export const UPDATE_RULE = "updateMessageRule";
 export const ADD_RULE = "addMessageRule";
 export const TEST_RULE = "testMessageRule";
-export const GET_ESERCENTICATEGORIE = "getMerchantsCategory"
+export const GET_ESERCENTICATEGORIE = "getMerchantsCategory";
 
 const METHOD = { POST: 1, GET: 2 };
 import { getConfiguration } from "@/services/config";
@@ -58,7 +58,7 @@ const serviceConfiguration = {
   testMessageRule: () => serviceDefinition(TEST_RULE, METHOD.POST),
   updateMessageRule: () => serviceDefinition(UPDATE_RULE, METHOD.POST),
   addMessageRule: () => serviceDefinition(ADD_RULE, METHOD.POST),
-  getDistinctMerchant: () => serviceDefinition(GET_ESERCENTI, METHOD.GET),
+  getMerchantsWithoutCategory: () => serviceDefinition(GET_ESERCENTISENZACATEGORIE, METHOD.GET),
   getMerchantsCategory: () => serviceDefinition(GET_ESERCENTICATEGORIE, METHOD.GET),
   login,
 };

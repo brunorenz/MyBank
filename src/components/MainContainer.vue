@@ -18,11 +18,7 @@
         />
       </b-link>
       <SidebarToggler class="d-lg-none" display="md" mobile />
-      <SidebarToggler
-        class="d-md-down-none"
-        display="lg"
-        :defaultOpen="false"
-      />
+      <SidebarToggler class="d-md-down-none" display="lg" :defaultOpen="false" />
       <!-- <SidebarToggler mobile /> -->
       <b-navbar-nav class="d-md-down-none" v-if="isUserLogged">
         <b-nav-item class="px-3" to="/dashboard">Dashboard</b-nav-item>
@@ -32,9 +28,7 @@
           <b-dropdown-item to="/gestioneRegole">Regole</b-dropdown-item>
           <b-dropdown-item to="/gestioneCategorie">Esercenti e Categorie</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item class="px-3" to="/gestioneMovimenti"
-          >Gestione Movimenti</b-nav-item
-        >
+        <b-nav-item class="px-3" to="/gestioneMovimenti">Gestione Movimenti</b-nav-item>
       </b-navbar-nav>
 
       <b-navbar-nav class="ml-auto">
@@ -109,12 +103,9 @@ export default {
       return this.$route.name;
     },
     list() {
-      return this.$route.matched.filter(
-        (route) => route.name || route.meta.label
-      );
+      return this.$route.matched.filter((route) => route.name || route.meta.label);
     },
     isUserLogged() {
-      //let uid = this.$store.getters.sessione.uniqueId;
       let uid = this.$store.getters.uid;
 
       let logged = uid != "";

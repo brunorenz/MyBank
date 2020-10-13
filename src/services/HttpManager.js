@@ -54,6 +54,10 @@ export default class HttpManager {
     return outUrl;
   }
 
+  async callAsyncNodeServer(serviceInfo) {
+    return await this.callNodeServer(serviceInfo);
+  }
+
   callNodeServer(serviceInfo) {
     let url = this.getUrl(serviceInfo.url, serviceInfo.query, serviceInfo.baseUrl);
     let auth = true;

@@ -53,20 +53,20 @@ let store = new Vuex.Store({
     storage: (state) => (key) => {
       let d = state.datiStorage;
       if (d === undefined) d = {};
-      if (d[key] == undefined) {
+      if (d[key] === undefined) {
         let usr = recuperaLocalStorage(KEY_USER);
         return usr[key];
       }
       return d[key];
     },
-    sessione: (state) => (key) => {
+    session: (state) => (key) => {
       let d = state.datiSessione;
       if (d === undefined) d = {};
       return d[key];
     },
   },
   mutations: {
-    cleanSessione(state) {
+    cleanSession(state) {
       state.datiSessione = {};
       state.datiStorage = {};
       cleanLocalStorage(KEY_USER);
@@ -84,7 +84,7 @@ let store = new Vuex.Store({
       }
     },
 
-    updateKeySessione(state, { key, value }) {
+    updateKeySession(state, { key, value }) {
       if (state.datiSessione === undefined) state.datiSessione = {};
       if (key) {
         state.datiSessione[key] = value;
