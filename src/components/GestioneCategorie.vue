@@ -1,5 +1,6 @@
 <template>
   <div class="app">
+    <ModalConfiguration :model="modalCfg" v-on:updateConfiguration="updateConfiguration"></ModalConfiguration>
     <b-card no-body>
       <b-tabs card v-model="tabIndex" @input="getEsercenti">
         <b-tab no-body title="Esercenti Registrati" active></b-tab>
@@ -48,6 +49,7 @@
 </template>
 
 <script>
+import ModalConfiguration from "@/components/common/ModalConfiguration";
 import getMyBankConfiguration from "@/services/MyBankConfiguration";
 import HttpManager from "@/services/HttpManager";
 import { GET_ESERCENTISENZACATEGORIE, GET_ESERCENTICATEGORIE, getServiceInfo } from "@/services/restServices";
@@ -55,7 +57,7 @@ import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessag
 
 export default {
   name: "GestioneCategorie",
-  components: {},
+  components: { ModalConfiguration },
   data: function() {
     return {
       tabIndex: 0,
@@ -65,6 +67,10 @@ export default {
       visibleMessage: false,
       isMerchantsBusy: false,
       categories: {},
+      modalCfg: {
+        title: "Configurazione Categorie Commerciali",
+        fields: [],
+      },
     };
   },
   mounted: function() {
@@ -72,6 +78,9 @@ export default {
     this.getEsercenti();
   },
   methods: {
+    updateConfiguration() {
+      console.log("Update category");
+    },
     onMerchantsRowSelected(items) {
       this.selectedMessage = items;
     },
