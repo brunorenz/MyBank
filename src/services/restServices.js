@@ -10,6 +10,7 @@ export const GET_RULES = "getMessageRule";
 export const EXPORT_RULES = "exportMessageRule";
 export const GET_CONFIGURATION = "getMyBankConfiguration";
 export const GET_ESERCENTISENZACATEGORIE = "getMerchantsWithoutCategory";
+export const UPDATE_CATEGORY = "updateCategory";
 const DELETE_RULE = "deleteMessageRule";
 export const UPDATE_RULE = "updateMessageRule";
 export const ADD_RULE = "addMessageRule";
@@ -60,6 +61,7 @@ const serviceConfiguration = {
   addMessageRule: () => serviceDefinition(ADD_RULE, METHOD.POST),
   getMerchantsWithoutCategory: () => serviceDefinition(GET_ESERCENTISENZACATEGORIE, METHOD.GET),
   getMerchantsCategory: () => serviceDefinition(GET_ESERCENTICATEGORIE, METHOD.GET),
+  updateCategory: () => serviceDefinition(UPDATE_CATEGORY, METHOD.POST),
   login,
 };
 

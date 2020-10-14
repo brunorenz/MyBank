@@ -1,19 +1,16 @@
 <template>
   <div class="animated fadeIn">
-    <b-button
-      size="lg"
-      class="float-right"
-      variant="normal transparent p-0"
-      right
-      @click="showModal"
-    >
-      <i class="fa fa-cog"></i>
-    </b-button>
+    <div v-if="show === undefined">
+      <b-button size="lg" class="float-right" variant="normal transparent p-0" right @click="showModalButtun">
+        <i class="fa fa-cog"></i>
+      </b-button>
+    </div>
     <b-modal
-      v-model="show"
+      v-model="showModal"
       id="modalConfiguration"
       :title="model.title"
       @ok="updateConfiguration"
+      @cancel="cancelConfiguration"
       :ok-disabled="tmpModalData.disable"
     >
       <b-form-group
@@ -36,6 +33,14 @@
             :options="field.options"
           ></b-form-radio-group>
         </div>
+        <div v-else-if="field.type == 'select'">
+          <b-form-select
+            :id="field.id"
+            v-model="field.value"
+            :placeholder="field.label"
+            :options="field.options"
+          ></b-form-select>
+        </div>
         <div v-else>
           <b-form-input
             :id="field.id"
@@ -55,18 +60,19 @@
 <script>
 export default {
   name: "ModalConfiguration",
-  props: ["model"],
+  props: ["model", "show"],
   data: function() {
     return {
       tmpModalData: { disable: false, windowsOpen: true },
-      show: false
+      showButton: false,
+      showModal: false,
     };
   },
   computed: {
     intervalStateInvalidFeedback() {
       console.log("Call intervalStateInvalidFeedback");
       return "Dato immesso non valido";
-    }
+    },
   },
   beforeMount: function() {
     console.log(">>>> beforeMount : Load configuration..");
@@ -74,12 +80,15 @@ export default {
   },
   beforeUpdate: function() {
     console.log(">>>> beforeUpdate Load configuration..");
-    //this.resetConfiguration();
+    if (this.show != undefined) {
+      this.resetConfiguration();
+      this.showModal = this.show;
+    }
   },
   methods: {
-    showModal() {
+    showModalButtun() {
       this.resetConfiguration();
-      this.show = true;
+      this.showModal = true;
     },
     checkField(event) {
       this._checkField(event.target.id);
@@ -102,6 +111,9 @@ export default {
       }
       this.tmpModalData.disable = !ok;
     },
+    cancelConfiguration() {
+      this.$emit("updateConfiguration", []);
+    },
     updateConfiguration() {
       console.log("Update configuration");
       var fields = [];
@@ -109,14 +121,15 @@ export default {
         let field = this.tmpModalData.model.fields[ix];
         if (field.value != this.model.fields[ix].value) fields.push(field);
       }
-      if (fields.length > 0) this.$emit("updateConfiguration", fields);
+      //if (fields.length > 0)
+      this.$emit("updateConfiguration", fields);
     },
     resetConfiguration() {
       console.log("reset configuration");
       var modelOut = JSON.parse(JSON.stringify(this.model));
       this.tmpModalData.model = modelOut;
       this.tmpModalData.disable = false;
-    }
-  }
+    },
+  },
 };
 </script>

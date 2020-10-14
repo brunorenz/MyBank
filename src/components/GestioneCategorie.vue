@@ -1,6 +1,10 @@
 <template>
   <div class="app">
-    <ModalConfiguration :model="modalCfg" v-on:updateConfiguration="updateConfiguration"></ModalConfiguration>
+    <ModalConfiguration
+      :model="modalCfg"
+      :show="showModal"
+      v-on:updateConfiguration="updateConfiguration"
+    ></ModalConfiguration>
     <b-card no-body>
       <b-tabs card v-model="tabIndex" @input="getEsercenti">
         <b-tab no-body title="Esercenti Registrati" active></b-tab>
@@ -52,7 +56,12 @@
 import ModalConfiguration from "@/components/common/ModalConfiguration";
 import getMyBankConfiguration from "@/services/MyBankConfiguration";
 import HttpManager from "@/services/HttpManager";
-import { GET_ESERCENTISENZACATEGORIE, GET_ESERCENTICATEGORIE, getServiceInfo } from "@/services/restServices";
+import {
+  GET_ESERCENTISENZACATEGORIE,
+  GET_ESERCENTICATEGORIE,
+  UPDATE_CATEGORY,
+  getServiceInfo,
+} from "@/services/restServices";
 import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 
 export default {
@@ -71,6 +80,8 @@ export default {
         title: "Configurazione Categorie Commerciali",
         fields: [],
       },
+      fieldCategoria: {},
+      showModal: false,
     };
   },
   mounted: function() {
@@ -78,8 +89,29 @@ export default {
     this.getEsercenti();
   },
   methods: {
-    updateConfiguration() {
-      console.log("Update category");
+    updateCategory(request) {
+      const httpService = new HttpManager();
+      let info = getServiceInfo(UPDATE_CATEGORY);
+      info.request = request;
+      httpService
+        .callNodeServer(info)
+        .then((response) => {
+          this.getEsercenti();
+          showMsgEsitoEsecuzione(this, "Categoria aggiornata con successo!");
+        })
+        .catch((error) => {
+          showMsgErroreEsecuzione(this, error);
+        });
+    },
+    updateConfiguration(updatedFields) {
+      this.showModal = false;
+      if (updatedFields != undefined && updatedFields.length === 1) {
+        console.log("Update category");
+        showConfirmationMessage(this, "Confermi l'aggiornamneto della categoria ?", this.updateCategory, {
+          merchant: this.selectedMessage[0].merchant,
+          category: updatedFields[0].value,
+        });
+      }
     },
     onMerchantsRowSelected(items) {
       this.selectedMessage = items;
@@ -87,8 +119,22 @@ export default {
     async getMyBankConfiguration() {
       let cfg = await getMyBankConfiguration();
       this.categories = cfg.categories;
+      let key = Object.keys(cfg.categories);
+      let options = [];
+      for (let ix = 0; ix < key.length; ix++)
+        options.push({ text: cfg.categories[key[ix]].description, value: key[ix] });
+      this.fieldCategoria = {
+        label: "Categoria",
+        type: "select",
+        options: options,
+      };
+      this.modalCfg.fields = [this.fieldCategoria];
     },
-    associaCategoria() {},
+    associaCategoria() {
+      this.fieldCategoria.value = this.selectedMessage[0].key;
+      this.fieldCategoria.label = "Categoria per " + this.selectedMessage[0].merchant;
+      this.showModal = true;
+    },
     getEsercenti() {
       console.log("Index : " + this.tabIndex);
       const httpService = new HttpManager();
@@ -118,6 +164,7 @@ export default {
             for (var i = 0; i < dati.length; i++) {
               let d = dati[i];
               esercenti.push({
+                key: d.category,
                 merchant: d.merchant,
                 category:
                   this.categories[d.category] === undefined ? d.category : this.categories[d.category].description,

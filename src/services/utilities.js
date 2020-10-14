@@ -48,7 +48,7 @@ let showMsgErroreEsecuzione = function(obj, esito, funzione) {
 
 exports.showMsgErroreEsecuzione = showMsgErroreEsecuzione;
 
-let showConfirmationMessage = function(obj, message, operation) {
+let showConfirmationMessage = function(obj, message, operation, operationParameter) {
   let options = {
     title: "Conferma Operazione",
     okVariant: "success",
@@ -59,7 +59,10 @@ let showConfirmationMessage = function(obj, message, operation) {
   obj.$bvModal
     .msgBoxConfirm(message, options)
     .then((value) => {
-      if (value) operation();
+      if (value) {
+        if (operationParameter) operation(operationParameter);
+        else operation();
+      }
     })
     .catch((err) => {
       console.error("Errore in display msgbox : " + err);
