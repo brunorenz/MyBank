@@ -125,30 +125,10 @@ export default {
       console.log("Update rules from FROM !!");
       this.deselectRules();
     },
-    // addRule() {
-    //   console.log("Add rule !!");
-    // },
     reloadAndClear() {
       this.deselectRules();
       this.getRules();
     },
-    // updateRule(confirm) {
-    //   if (typeof confirm != "undefined")
-    //     showConfirmationMessage(this, "Confermi l'aggiornamento della regola' ?", this.updateRule);
-    //   else {
-    //     console.log("Aggiorna regola !!");
-    //   }
-    // },
-    // deleteRule(confirm) {
-    //   if (typeof confirm != "undefined") {
-    //     showConfirmationMessage(this, "Confermi la cancellazione della regola ?", this.deleteRule);
-    //   } else {
-    //     console.log("Elimina regola !!");
-    //   }
-    // },
-    // addMessageMsgBox() {
-    //   showConfirmationMessage(this, "Confermi l'inserimento ?", this.addMessage);
-    // },
     onRulesRowSelected(items) {
       this.rulesSelected = items;
       if (items.length === 0) {
@@ -178,8 +158,8 @@ export default {
         field.push({ key: "key2", label: "Identificativo", sortable: true });
       }
       field.push({ key: "bankId", label: "Banca", sortable: true });
+      field.push({ key: "validIf", label: "Valida se presente", sortable: false });
       this.rulesFields = field;
-      //const httpService = new HttpManager();
       let info = getServiceInfo(GET_RULES);
       info.query.type = this.messageType;
       new HttpManager()
