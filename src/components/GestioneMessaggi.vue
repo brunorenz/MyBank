@@ -213,6 +213,7 @@ export default {
       else {
         this.sampleMessagesShow = true;
         this.listMessages();
+        this.deselectAllMessages();
       }
       this.ruleShow = false;
     },

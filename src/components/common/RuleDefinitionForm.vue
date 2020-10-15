@@ -7,7 +7,20 @@
     ></ModalConfiguration>
 
     <div v-if="rule != null">
-      <b-row>
+      <b-row class="ml-0">
+        <b-button variant="primary" @click="annulla">Annulla</b-button>
+        <b-button variant="primary" @click="updateMessageRule(true)" class="ml-2" :disabled="!anyChange && !newRule">{{
+          displayAdd
+        }}</b-button>
+        <b-button variant="primary" @click="duplicateRule(true)" class="ml-2" :disabled="newRule"
+          >Duplica Regola</b-button
+        >
+        <b-button v-if="typeof message != 'undefined'" class="ml-2" variant="success" @click="testRule"
+          >Simula Regola</b-button
+        >
+        <b-button class="ml-2" variant="danger" @click="deleteRule(true)" :disabled="newRule">Elimina Regola</b-button>
+      </b-row>
+      <b-row class="mt-2">
         <b-col sm="3">
           <label class="font-weight-bold">
             {{ rule.type === "SMS" ? "Orgine SMS" : "Nome pacchetto messaggio PUSH" }}
@@ -95,6 +108,9 @@
                 v-if="cfg.attrTypeProp[entry.key].exist === false"
               >
                 <b-input v-model="entry.rule.before" @change="checkField()"></b-input>
+              </b-form-group>
+              <b-form-group label="Numero occorrenze" class="col-sm-3" v-if="entry.rule.before != undefined">
+                <b-input v-model="entry.rule.occurs" @change="checkField()"></b-input>
               </b-form-group>
               <b-form-group label="Testo in coda" class="col-sm-3" v-if="cfg.attrTypeProp[entry.key].exist === false">
                 <b-input v-model="entry.rule.after" @change="checkField()"></b-input>
@@ -245,6 +261,14 @@ export default {
       let dis = this.ruleByKey[key] != null;
       return dis;
     },
+    duplicateRule(confirm) {
+      if (confirm != undefined) {
+        showConfirmationMessage(this, "Confermi la duplicazione della regola ?", this.duplicateRule);
+      } else {
+        delete this.rule["_id"];
+        this.newRule = true;
+      }
+    },
     updateMessageRule(confirm) {
       let add = typeof this.rule._id === "undefined";
       if (typeof confirm != "undefined") {
@@ -334,7 +358,6 @@ export default {
       // check any changes ?
       if (typeof confirm != "undefined") {
         let r = JSON.stringify(this.rule);
-        //let r1 = JSON.stringify(this.savedRule);
         if (r != this.savedRule) {
           showConfirmationMessage(this, "Confermi l'annullamento delle modifiche apportate ?", this.annulla);
         } else this.$emit("updateRules");
@@ -511,12 +534,9 @@ export default {
       console.log("Update updateFromData ..");
       // create buttun index
       if (typeof this.rule != "undefined" && this.rule != null) {
-        //        if (this.rule != null && this.rule.rules) {
         for (let ix = 0; ix < this.rule.rules.length; ix++) {
           this.rule.rules[ix].ix = ix;
         }
-        //      }
-        // create test modal strutture
         let r = {};
         for (let ix = 0; ix < this.rule.rules.length; ix++) r[this.rule.rules[ix].key] = this.rule.rules[ix];
         this.ruleByKey = r;
@@ -527,12 +547,10 @@ export default {
       console.log("Button : " + ix);
       let out = [];
       if (action === "addB") {
-        //
         this.showModalAddRule = true;
       } else if (action === "deleteB") {
         //
       }
-      //this.updateFormData();
     },
   },
 };
