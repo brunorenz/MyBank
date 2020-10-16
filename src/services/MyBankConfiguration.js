@@ -22,9 +22,14 @@ let getMyBankConfiguration = async function() {
     for (let ix = 0; ix < d.categories.length; ix++) {
       ca[d.categories[ix].category] = d.categories[ix];
     }
+    let mv = {};
+    for (let ix = 0; ix < d.movementType.length; ix++) {
+      mv[d.movementType[ix].type] = d.movementType[ix];
+    }
     let mybankCfg = {
       accounts: ac,
       categories: ca,
+      movementType: mv,
     };
     store.commit("updateKeySession", {
       key: "mybankCfg",

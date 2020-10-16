@@ -505,31 +505,7 @@ export default {
         if (typeof this.cfg.attrTypeProp[rules[ix].key] != "undefined") outrule.push(rules[ix]);
       return outrule;
     },
-    // createConfigurationData() {
-    //   let cfg = getConfiguration();
-    //   this.ruleDefinitions = cfg.ruleDefinitions;
-    //   let o = [];
-    //   let oe = [];
-    //   let p = {};
-    //   for (let ix = 0; ix < cfg.ruleDefinitions.length; ix++) {
-    //     let r = cfg.ruleDefinitions[ix];
-    //     let entry = {
-    //       value: r.key,
-    //       text: r.key,
-    //       valueLC: r.key.toLowerCase(),
-    //     };
-    //     if (r.exist) oe.push(entry);
-    //     else o.push(entry);
-    //     p[r.key] = {
-    //       exist: r.exist,
-    //       type: r.type,
-    //       pattern: r.pattern,
-    //     };
-    //   }
-    //   this.attrTypeOptionsExist = oe;
-    //   this.attrTypeOptions = o;
-    //   this.attrTypeProp = p;
-    // },
+
     updateFormData() {
       console.log("Update updateFromData ..");
       // create buttun index
@@ -549,9 +525,19 @@ export default {
       if (action === "addB") {
         this.showModalAddRule = true;
       } else if (action === "deleteB") {
-        //
+        let t = this.rule.rules[ix].key;
+        showConfirmationMessage(this, "Confermi l'eliminazione della regola di tipo "+t+" ? ", this.eliminaEntryRegola,ix);
       }
     },
+    eliminaEntryRegola(ix)
+    {
+      let rules = [];
+      for (let iy = 0; iy <this.rule.rules.length; iy++)
+      if (ix != iy) rules.push(this.rule.rules[iy]);
+      this.rule.rules = rules;
+      this.anyChange = true;
+      this.updateFormData();
+    }
   },
 };
 </script>
