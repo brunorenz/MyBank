@@ -18,4 +18,6 @@ $fa-font-path: "~font-awesome/fonts/";
 @import "~font-awesome/scss/font-awesome.scss";
 // Import Main styles for this application
 @import "assets/scss/style";
+// Import BPB css styles
+@import "assets/css/style";
 </style>

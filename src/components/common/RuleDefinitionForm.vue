@@ -1,5 +1,6 @@
 <template>
   <div>
+    <ViewLoading v-if="viewLoading" />
     <ModalConfiguration
       :model="modalCfg"
       :show="showModal"
@@ -18,6 +19,7 @@
         <b-button v-if="typeof message != 'undefined'" class="ml-2" variant="success" @click="testRule"
           >Simula Regola</b-button
         >
+        <b-button class="ml-2" variant="warning" @click="applyRule(true)">Applica a tutti i Messaggi</b-button>
         <b-button class="ml-2" variant="danger" @click="deleteRule(true)" :disabled="newRule">Elimina Regola</b-button>
       </b-row>
       <b-row class="mt-2">
@@ -141,9 +143,13 @@
         <b-button variant="primary" @click="updateMessageRule(true)" class="ml-2" :disabled="!anyChange && !newRule">{{
           displayAdd
         }}</b-button>
+        <b-button variant="primary" @click="duplicateRule(true)" class="ml-2" :disabled="newRule"
+          >Duplica Regola</b-button
+        >
         <b-button v-if="typeof message != 'undefined'" class="ml-2" variant="success" @click="testRule"
           >Simula Regola</b-button
         >
+        <b-button class="ml-2" variant="warning" @click="applyRule(true)">Applica a tutti i Messaggi</b-button>
         <b-button class="ml-2" variant="danger" @click="deleteRule(true)" :disabled="newRule">Elimina Regola</b-button>
       </b-row>
       <b-modal
@@ -199,8 +205,10 @@
 
 <script>
 import ModalConfiguration from "@/components/common/ModalConfiguration";
+import ViewLoading from "@/components/common/ViewLoading";
 import HttpManager from "@/services/HttpManager";
 import {
+  APPLY_RULE,
   ADD_RULE,
   UPDATE_RULE,
   TEST_RULE,
@@ -212,7 +220,7 @@ import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessag
 export default {
   name: "RuleDefinitionForm",
   props: ["ruleId", "message"],
-  components: { ModalConfiguration },
+  components: { ModalConfiguration, ViewLoading },
   data: function() {
     return {
       rule: null,
@@ -238,6 +246,7 @@ export default {
       },
       showModal: false,
       savedRules: undefined,
+      viewLoading: false,
     };
   },
   computed: {
@@ -267,6 +276,51 @@ export default {
       } else {
         delete this.rule["_id"];
         this.newRule = true;
+      }
+    },
+    applyRule(confirm) {
+      if (confirm != undefined) {
+        showConfirmationMessage(
+          this,
+          "Confermi l'applicazione della regola a tutti i messaggi presenti ?",
+          this.applyRule
+        );
+      } else {
+        const httpService = new HttpManager();
+        this.viewLoading = true;
+        let info = getServiceInfo(APPLY_RULE);
+        info.request = this.rule;
+        httpService
+          .callNodeServer(info)
+          .then((response) => {
+            var data = response.data;
+            let esito = data.error;
+            if (esito.code === 0) {
+              //
+              let msgs = data.data;
+              let accepted = 0;
+              let notAccepted = 0;
+              let notFound = 0;
+              for (let ix = 0; ix < msgs.length; ix++) {
+                accepted += msgs[ix].accepted ? 1 : 0;
+                notFound += msgs[ix].found ? 0 : 1;
+                notAccepted += msgs[ix].accepted ? 0 : 1;
+              }
+              console.log("Not found : " + notFound + " - Accepted " + accepted + " - Not accepted " + notAccepted);
+              this.viewLoading = false;
+              showMsgEsitoEsecuzione(
+                this,
+                `Non trovati : ${notFound} - Accettati : ${accepted} - Non accettati : ${notAccepted}`
+              );
+            } else {
+              this.viewLoading = false;
+              showMsgErroreEsecuzione(this);
+            }
+          })
+          .catch((error) => {
+            this.viewLoading = false;
+            showMsgErroreEsecuzione(this, error);
+          });
       }
     },
     updateMessageRule(confirm) {
@@ -526,18 +580,21 @@ export default {
         this.showModalAddRule = true;
       } else if (action === "deleteB") {
         let t = this.rule.rules[ix].key;
-        showConfirmationMessage(this, "Confermi l'eliminazione della regola di tipo "+t+" ? ", this.eliminaEntryRegola,ix);
+        showConfirmationMessage(
+          this,
+          "Confermi l'eliminazione della regola di tipo " + t + " ? ",
+          this.eliminaEntryRegola,
+          ix
+        );
       }
     },
-    eliminaEntryRegola(ix)
-    {
+    eliminaEntryRegola(ix) {
       let rules = [];
-      for (let iy = 0; iy <this.rule.rules.length; iy++)
-      if (ix != iy) rules.push(this.rule.rules[iy]);
+      for (let iy = 0; iy < this.rule.rules.length; iy++) if (ix != iy) rules.push(this.rule.rules[iy]);
       this.rule.rules = rules;
       this.anyChange = true;
       this.updateFormData();
-    }
+    },
   },
 };
 </script>

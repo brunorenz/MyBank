@@ -20,7 +20,6 @@
           :fields="merchantsFields"
           selected-variant="primary"
           @row-selected="onMerchantsRowSelected"
-          responsive="md"
           sort-icon-left
           striped
           small
@@ -42,7 +41,7 @@
             <div class="text-center">{{ data.value }}</div>
           </template>
         </b-table>
-        <b-row class="justify-content-md-center mb-3">
+        <b-row class="justify-content-center">
           <b-button class="mx-2" variant="primary" :disabled="selectedMessage.length === 0" @click="associaCategoria"
             >Associa Categoria</b-button
           >
