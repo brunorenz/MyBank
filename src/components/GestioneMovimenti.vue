@@ -3,27 +3,15 @@
     <b-card header="Filtro Ricerca">
       <b-row>
         <b-form-group label="Solo movimenti validi" class="col-sm-3">
-          <b-form-checkbox
-            id="msgAccepted"
-            v-model="msgAccepted"
-          ></b-form-checkbox>
+          <b-form-checkbox id="msgAccepted" v-model="msgAccepted"></b-form-checkbox>
         </b-form-group>
-        <b-form-group
-          label="Intervallo date"
-          id="fieldDateRange"
-          class="col-sm-3"
-        >
+        <b-form-group label="Intervallo date" id="fieldDateRange" class="col-sm-3">
           <div>
             <date-picker v-model="dateRange" type="month" range></date-picker>
           </div>
         </b-form-group>
       </b-row>
-      <b-button
-        variant="primary"
-        @click="searchMovements"
-        :disabled="dateRange === null"
-        >Aggiorna</b-button
-      >
+      <b-button variant="primary" @click="searchMovements" :disabled="dateRange === null">Aggiorna</b-button>
     </b-card>
     <b-card header="Movimenti Registrati">
       <div v-if="itemsAllDare.length > 0">
@@ -116,16 +104,15 @@
         </b-row>
         <b-row>
           <b-col class="col-sm-4">
-            <div><h5>Importo Totale dei movimenti selezionati</h5> </div>
+            <div><h5>Importo Totale dei movimenti selezionati</h5></div>
           </b-col>
           <b-col class="col-sm-3 text-right">
-            <div><h5>{{ this.totale }}</h5></div>
+            <div>
+              <h5>{{ this.totale }}</h5>
+            </div>
           </b-col>
         </b-row>
-        <b-button
-          variant="primary"
-          @click="searchMovements"
-          :disabled="selectedMessage.length === 0"
+        <b-button variant="primary" @click="readMessageDetail" :disabled="selectedMessage.length === 0"
           >Dettaglio</b-button
         >
       </b-card-text>
@@ -135,25 +122,17 @@
 
 <script>
 import HttpManager from "@/services/HttpManager";
-import {
-  GET_CONFIGURATION,
-  LIST_MOVEMENTS,
-  getServiceInfo,
-} from "@/services/restServices";
+import { READ_MESSAGE, LIST_MOVEMENTS, getServiceInfo } from "@/services/restServices";
 import DatePicker from "vue2-datepicker";
 import "vue2-datepicker/index.css";
 import "vue2-datepicker/locale/it";
-import {
-  showMsgEsitoEsecuzione,
-  showMsgErroreEsecuzione,
-  showConfirmationMessage,
-} from "@/services/utilities";
+import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 import getMyBankConfiguration from "@/services/MyBankConfiguration";
 
 export default {
   name: "GestioneMovimenti",
   components: { DatePicker },
-  data: function () {
+  data: function() {
     return {
       selectedMessage: [],
       fieldsAll: [],
@@ -171,7 +150,7 @@ export default {
       movementType: {},
     };
   },
-  mounted: function () {
+  mounted: function() {
     this.getMyBankConfiguration();
     let now1 = new Date();
     let now2 = new Date();
@@ -221,6 +200,24 @@ export default {
       this.categories = cfg.categories;
       this.bankInfo = cfg.accounts;
       this.movementType = cfg.movementType;
+    },
+    readMessageDetail() {
+      const httpService = new HttpManager();
+      let info = getServiceInfo(READ_MESSAGE);
+      info.query.msgId = this.selectedMessage[0].msgId;
+      httpService
+        .callNodeServer(info)
+        .then((response) => {
+          var data = response.data;
+          let esito = data.error;
+          if (esito.code === 0) {
+            let dati = data.dati;
+            debugger;
+          } else showMsgErroreEsecuzione(this);
+        })
+        .catch((error) => {
+          showMsgErroreEsecuzione(this, error);
+        });
     },
     searchMovements() {
       this.isAccountMovementsBusy = true;
@@ -299,14 +296,9 @@ export default {
                 bankId: d.bankId,
                 category: "N/D",
               };
-              if (this.bankInfo[d.bankId] != undefined)
-                entry.bankId = this.bankInfo[d.bankId].bankName;
-              if (this.categories[d.categoria] != undefined)
-                entry.category = this.categories[d.categoria].description;
-              if (
-                d.segnoMovimento != undefined &&
-                d.segnoMovimento === "AVERE"
-              ) {
+              if (this.bankInfo[d.bankId] != undefined) entry.bankId = this.bankInfo[d.bankId].bankName;
+              if (this.categories[d.categoria] != undefined) entry.category = this.categories[d.categoria].description;
+              if (d.segnoMovimento != undefined && d.segnoMovimento === "AVERE") {
                 if (typeof d.importo === "number") totaleA += d.importo;
                 datiServersA.push(entry);
               } else {
