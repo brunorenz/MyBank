@@ -3,15 +3,27 @@
     <b-card header="Filtro Ricerca">
       <b-row>
         <b-form-group label="Solo movimenti validi" class="col-sm-3">
-          <b-form-checkbox id="msgAccepted" v-model="msgAccepted"></b-form-checkbox>
+          <b-form-checkbox
+            id="msgAccepted"
+            v-model="msgAccepted"
+          ></b-form-checkbox>
         </b-form-group>
-        <b-form-group label="Intervallo date" id="fieldDateRange" class="col-sm-3">
+        <b-form-group
+          label="Intervallo date"
+          id="fieldDateRange"
+          class="col-sm-3"
+        >
           <div>
             <date-picker v-model="dateRange" type="month" range></date-picker>
           </div>
         </b-form-group>
       </b-row>
-      <b-button variant="primary" @click="searchMovements" :disabled="dateRange === null">Aggiorna</b-button>
+      <b-button
+        variant="primary"
+        @click="searchMovements"
+        :disabled="dateRange === null"
+        >Aggiorna</b-button
+      >
     </b-card>
     <b-card header="Movimenti Registrati">
       <div v-if="itemsAllDare.length > 0">
@@ -112,7 +124,10 @@
             </div>
           </b-col>
         </b-row>
-        <b-button variant="primary" @click="readMessageDetail" :disabled="selectedMessage.length === 0"
+        <b-button
+          variant="primary"
+          @click="readMessageDetail"
+          :disabled="selectedMessage.length === 0"
           >Dettaglio</b-button
         >
       </b-card-text>
@@ -122,12 +137,29 @@
       id="modalMessageDetail"
       :title="msgDet.title"
       @ok="showModalMessageDetail = false"
+      ok-only
     >
       <div>
-        <b-row class="col-sm-3">PIPPO</b-row>
-        <b-row class="col-sm-3">PLUTO</b-row>
-        <b-row class="col-sm-3">PIPPO</b-row>
-        <b-row class="col-sm-3">PLUTO</b-row>
+        <b-row>
+          <b-col class="font-weight-bold col-sm-4">Tipo Messaggio </b-col>
+          <b-col >{{ msgDet.type }} </b-col>
+        </b-row>
+        <b-row>
+          <b-col class="font-weight-bold col-sm-4">Data Invio </b-col>
+          <b-col>{{ msgDet.date }} </b-col>
+        </b-row>
+        <b-row v-if="msgDet.type == 'PUSH'">
+          <b-col class="font-weight-bold col-sm-4">Nome Pacchetto </b-col>
+          <b-col>{{ msgDet.packageName }} </b-col>
+        </b-row>
+        <b-row>
+          <b-col class="font-weight-bold col-sm-4">Mittente</b-col>
+          <b-col>{{ msgDet.sender }} </b-col>
+        </b-row>
+        <b-row>
+          <b-col class="font-weight-bold col-sm-4">Messaggio </b-col>
+          <b-col>{{ msgDet.message }} </b-col>
+        </b-row>
       </div>
     </b-modal>
   </div>
@@ -135,17 +167,25 @@
 
 <script>
 import HttpManager from "@/services/HttpManager";
-import { READ_MESSAGE, LIST_MOVEMENTS, getServiceInfo } from "@/services/restServices";
+import {
+  READ_MESSAGE,
+  LIST_MOVEMENTS,
+  getServiceInfo,
+} from "@/services/restServices";
 import DatePicker from "vue2-datepicker";
 import "vue2-datepicker/index.css";
 import "vue2-datepicker/locale/it";
-import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
+import {
+  showMsgEsitoEsecuzione,
+  showMsgErroreEsecuzione,
+  showConfirmationMessage,
+} from "@/services/utilities";
 import getMyBankConfiguration from "@/services/MyBankConfiguration";
 
 export default {
   name: "GestioneMovimenti",
   components: { DatePicker },
-  data: function() {
+  data: function () {
     return {
       selectedMessage: [],
       fieldsAll: [],
@@ -165,7 +205,7 @@ export default {
       msgDet: { title: "" },
     };
   },
-  mounted: function() {
+  mounted: function () {
     this.getMyBankConfiguration();
     let now1 = new Date();
     let now2 = new Date();
@@ -225,10 +265,16 @@ export default {
         .then((response) => {
           var data = response.data;
           let esito = data.error;
+          let dati = data.data;
           if (esito.code === 0) {
-            data.title = "Dettaglio " + (data.type === "SMS" ? "messaggio SMS" : "notifica PUSH");
-            this.msgDet = data;
-            this.showModalMessageDetail = true;
+            dati.title =
+              "Dettaglio " +
+              (dati.type === "SMS" ? "messaggio SMS" : "notifica PUSH");
+            this.msgDet = dati;
+            (this.msgDet.date = this.$moment(dati.date).format(
+              "DD/MM/YYYY HH:MM:SS"
+            )),
+              (this.showModalMessageDetail = true);
           } else showMsgErroreEsecuzione(this);
         })
         .catch((error) => {
@@ -312,9 +358,14 @@ export default {
                 bankId: d.bankId,
                 category: "N/D",
               };
-              if (this.bankInfo[d.bankId] != undefined) entry.bankId = this.bankInfo[d.bankId].bankName;
-              if (this.categories[d.categoria] != undefined) entry.category = this.categories[d.categoria].description;
-              if (d.segnoMovimento != undefined && d.segnoMovimento === "AVERE") {
+              if (this.bankInfo[d.bankId] != undefined)
+                entry.bankId = this.bankInfo[d.bankId].bankName;
+              if (this.categories[d.categoria] != undefined)
+                entry.category = this.categories[d.categoria].description;
+              if (
+                d.segnoMovimento != undefined &&
+                d.segnoMovimento === "AVERE"
+              ) {
                 if (typeof d.importo === "number") totaleA += d.importo;
                 datiServersA.push(entry);
               } else {
