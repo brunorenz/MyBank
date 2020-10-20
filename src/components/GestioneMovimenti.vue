@@ -117,6 +117,19 @@
         >
       </b-card-text>
     </b-card>
+    <b-modal
+      v-model="showModalMessageDetail"
+      id="modalMessageDetail"
+      :title="msgDet.title"
+      @ok="showModalMessageDetail = false"
+    >
+      <div>
+        <b-row class="col-sm-3">PIPPO</b-row>
+        <b-row class="col-sm-3">PLUTO</b-row>
+        <b-row class="col-sm-3">PIPPO</b-row>
+        <b-row class="col-sm-3">PLUTO</b-row>
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -148,6 +161,8 @@ export default {
       bankInfo: {},
       categories: {},
       movementType: {},
+      showModalMessageDetail: false,
+      msgDet: { title: "" },
     };
   },
   mounted: function() {
@@ -211,8 +226,9 @@ export default {
           var data = response.data;
           let esito = data.error;
           if (esito.code === 0) {
-            let dati = data.dati;
-            debugger;
+            data.title = "Dettaglio " + (data.type === "SMS" ? "messaggio SMS" : "notifica PUSH");
+            this.msgDet = data;
+            this.showModalMessageDetail = true;
           } else showMsgErroreEsecuzione(this);
         })
         .catch((error) => {
