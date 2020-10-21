@@ -78,6 +78,13 @@
         </b-table>
         <b-row class="ml-0" v-if="isRuleDefined === false">
           <b-button variant="primary" @click="manageRule(true)">Aggiungi Regola</b-button>
+          <b-button
+            class="ml-2"
+            variant="warning"
+            :disabled="sampleMessagesSelected.length != 1"
+            @click="duplicateMessage"
+            >Duplica Messaggio</b-button
+          >
         </b-row>
         <b-row class="ml-0" v-if="isRuleDefined === true">
           <b-button
@@ -85,6 +92,13 @@
             @click="manageRule(false)"
             :disabled="messageType === 'PUSH' && sampleMessagesSelected.length != 1"
             >Gestisci Regola</b-button
+          >
+          <b-button
+            class="ml-2"
+            variant="warning"
+            :disabled="sampleMessagesSelected.length != 1"
+            @click="duplicateMessage"
+            >Duplica Messaggio</b-button
           >
           <b-button
             class="ml-2"
@@ -111,8 +125,14 @@
       </b-card>
     </b-collapse>
     <b-card :header="headerDetail" v-if="ruleShow === true">
-      <ruleDefinition :message="selectedMessage" v-on:updateRules="updateRules"></ruleDefinition>
+      <RuleDefinitionForm :message="selectedMessage" v-on:updateRules="updateRules"></RuleDefinitionForm>
     </b-card>
+    <ModalMessage
+      :msgDet="msgDet"
+      :show="showModalMessageDetail"
+      :update="true"
+      v-on:updateMessage="updateMessage"
+    ></ModalMessage>
   </div>
 </template>
 
@@ -127,11 +147,13 @@ import {
 } from "@/services/restServices";
 import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 import RuleDefinitionForm from "@/components/common/RuleDefinitionForm";
+import ModalMessage from "@/components/common/ModalMessage";
 
 export default {
   name: "GestioneMessaggi",
   components: {
-    ruleDefinition: RuleDefinitionForm,
+    RuleDefinitionForm,
+    ModalMessage,
   },
   computed: {
     headerDetail: function() {
@@ -166,12 +188,24 @@ export default {
       rules: null,
       ruleShow: false,
       selectedMessage: null,
+      showModalMessageDetail: false,
+      msgDet: {},
     };
   },
   mounted: function() {
     this.getNotificationMessage();
   },
   methods: {
+    duplicateMessage() {
+      let msg = this.sampleMessagesSelected[0];
+      msg.fullMessage.update = true;
+      this.msgDet = msg.fullMessage;
+      this.showModalMessageDetail = true;
+    },
+    updateMessage(message) {
+      debugger;
+      this.showModalMessageDetail = false;
+    },
     updateRules() {
       this.reloadAndClear();
       this.ruleShow = false;
@@ -264,7 +298,7 @@ export default {
       this.isReceivedMessageBusy = true;
       this.receivedMessageHeaderLabel = "Messaggi " + this.messageType + " Ricevuti";
       let isSMS = this.messageType === "SMS";
-      let label = isSMS ? "Origine messaggio" : "Nome pacchetto notifica";
+      let label = isSMS ? "Mittente messaggio" : "Nome pacchetto notifica";
       this.receivedMessageFields = [{ key: "key", label: label, sortable: true }];
       const httpService = new HttpManager();
       let info = getServiceInfo(GET_NOTIFICATIONMESSAGE);
@@ -327,7 +361,7 @@ export default {
       if (!isSMS)
         this.sampleMessagesFields.push({
           key: "fullMessage.sender",
-          label: "Origine",
+          label: "Mittente",
           sortable: true,
         });
       this.sampleMessagesFields.push({
@@ -369,7 +403,7 @@ export default {
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               let entry = {
-                date: self.$moment(new Date(dati[i].time)).format("DD/MM/YY HH:MM"),
+                date: self.$moment(new Date(dati[i].time)).format("DD/MM/YY hh:MM:SS"),
                 //_id: dati[i]._id,
                 fullMessage: dati[i],
               };

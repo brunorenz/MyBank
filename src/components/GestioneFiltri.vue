@@ -310,7 +310,7 @@ export default {
             var datiServers = [];
             for (var i = 0; i < dati.length; i++) {
               let entry = {
-                date: this.$moment(new Date(dati[i].time)).format("DD/MM/YY HH:MM"),
+                date: this.$moment(new Date(dati[i].time)).format("DD/MM/YY hh:MM"),
               };
               if (!isSMS) entry.sender = dati[i].sender;
               entry.message = dati[i].message;
