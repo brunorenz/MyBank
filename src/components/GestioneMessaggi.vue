@@ -197,13 +197,14 @@ export default {
   },
   methods: {
     duplicateMessage() {
+      //debugger;
       let msg = this.sampleMessagesSelected[0];
       msg.fullMessage.update = true;
       this.msgDet = msg.fullMessage;
       this.showModalMessageDetail = true;
     },
     updateMessage(message) {
-      debugger;
+      //debugger;
       this.showModalMessageDetail = false;
     },
     updateRules() {

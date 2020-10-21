@@ -1,7 +1,7 @@
 <template>
   <div class="animated fadeIn">
     <b-modal
-      v-model="showModalMessageDetail"
+      v-model="showModal"
       id="modalMessageDetail"
       :title="title"
       @ok="updateConfiguration"
@@ -27,7 +27,10 @@
           <b-col class="font-weight-bold col-sm-4">Data Invio </b-col>
           <b-col v-if="updateMsg === false">{{ msgDet.dateDisplay }} </b-col>
           <b-col v-else>
-            <b-form-datepicker v-model="msgDet.dateDisplay" locale="it"></b-form-datepicker>
+            <b-form-datepicker
+              v-model="msgDet.dateDisplay"
+              locale="it"
+            ></b-form-datepicker>
           </b-col>
         </b-row>
         <b-row class="mt-2">
@@ -54,7 +57,7 @@
 export default {
   name: "ModalMessage",
   props: ["msgDet", "show", "update"],
-  data: function() {
+  data: function () {
     return {
       tmpModalData: { disable: false, windowsOpen: true },
       showButton: false,
@@ -72,12 +75,15 @@ export default {
       console.log("Call intervalStateInvalidFeedback");
       return "Dato immesso non valido";
     },
+    showModal() {
+      return this.show;
+    }
   },
-  beforeMount: function() {
+  beforeMount: function () {
     console.log(">>>> beforeMount : Load configuration..");
     this.resetConfiguration();
   },
-  beforeUpdate: function() {
+  beforeUpdate: function () {
     console.log(">>>> beforeUpdate Load configuration..");
     if (this.show != undefined) {
       this.resetConfiguration();
@@ -115,22 +121,29 @@ export default {
     updateConfiguration() {
       var fields = [];
       if (this.updateMsg) {
-        for (var ix = 0; ix < this.tmpModalData.model.fields.length; ix++) {
-          let field = this.tmpModalData.model.fields[ix];
-          if (field.value != this.model.fields[ix].value) fields.push(field);
-        }
+        // for (var ix = 0; ix < this.tmpModalData.model.fields.length; ix++) {
+        //   let field = this.tmpModalData.model.fields[ix];
+        //   if (field.value != this.model.fields[ix].value) fields.push(field);
+        // }
       }
       this.$emit("updateMessage", fields);
     },
     resetConfiguration() {
-      console.log("reset configuration");
-      // aggiorno ora prima di fare copia
-      this.msgDet.dateDisplay = this.$moment(this.msgDet.time).format("DD/MM/YYYY hh:MM");
-      var modelOut = JSON.parse(JSON.stringify(this.msgDet));
-      this.updateMsg = this.update === undefined ? false : this.update;
-      this.title = this.updateMsg ? "Duplica " : " Dettaglio ";
-      this.title = this.title + (modelOut.type === "SMS" ? "Messaggio SMS" : "Notifica PUSH");
-      this.tmpModalData.model = modelOut;
+      console.log("reset configuration : "+this.show);
+      if (this.show) {
+        // aggiorno ora prima di fare copia
+        let d = this.$moment(this.msgDet.time);
+        this.msgDet.dateDisplay = d.format("DD/MM/YYYY");
+        this.msgDet.date = d;
+        var modelOut = JSON.parse(JSON.stringify(this.msgDet));
+        this.updateMsg = this.update === undefined ? false : this.update;
+        this.title = this.updateMsg ? "Duplica " : " Dettaglio ";
+        this.title =
+          this.title +
+          (modelOut.type === "SMS" ? "Messaggio SMS" : "Notifica PUSH");
+        this.tmpModalData.model = modelOut;
+        //debugger;
+      }
     },
   },
 };
