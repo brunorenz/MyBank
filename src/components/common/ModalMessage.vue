@@ -4,41 +4,48 @@
       v-model="showModal"
       id="modalMessageDetail"
       :title="title"
+      :nonCancellare="show"
+      no-close-on-backdrop
       @ok="updateConfiguration"
-      @cancel="cancelConfiguration"
-      @close="cancelConfiguration"
       @hide="cancelConfiguration"
       :ok-only="updateMsg === false"
+      :ok-disabled="!anyChange || anyError"
     >
       <div>
         <b-row>
           <b-col class="font-weight-bold col-sm-4">Tipo Messaggio </b-col>
-          <b-col>{{ msgDet.type }} </b-col>
+          <b-col>{{ saveMsgDet.type }} </b-col>
         </b-row>
         <b-row class="mt-2">
           <b-col class="font-weight-bold col-sm-4">Mittente</b-col>
-          <b-col>{{ msgDet.sender }} </b-col>
+          <b-col>{{ saveMsgDet.sender }} </b-col>
         </b-row>
-        <b-row class="mt-2" v-if="msgDet.type == 'PUSH'">
+        <b-row class="mt-2" v-if="saveMsgDet.type == 'PUSH'">
           <b-col class="font-weight-bold col-sm-4">Nome Pacchetto </b-col>
-          <b-col>{{ msgDet.packageName }} </b-col>
+          <b-col>{{ saveMsgDet.packageName }} </b-col>
         </b-row>
         <b-row class="mt-2">
           <b-col class="font-weight-bold col-sm-4">Data Invio </b-col>
-          <b-col v-if="updateMsg === false">{{ msgDet.dateDisplay }} </b-col>
+          <b-col v-if="updateMsg === false">{{ saveMsgDet.dateDisplay }} </b-col>
           <b-col v-else>
             <b-form-datepicker
-              v-model="msgDet.dateDisplay"
+              id="date"
+              v-model="saveMsgDet.date"
+              :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+              required
+              value-as-date
               locale="it"
+              @input="checkFieldData"
             ></b-form-datepicker>
           </b-col>
         </b-row>
         <b-row class="mt-2">
           <b-col class="font-weight-bold col-sm-4">Messaggio </b-col>
-          <b-col v-if="updateMsg === false">{{ msgDet.message }} </b-col>
+          <b-col v-if="updateMsg === false">{{ saveMsgDet.message }} </b-col>
           <b-col v-else>
             <b-form-textarea
-              v-model="msgDet.message"
+              id="message"
+              v-model="saveMsgDet.message"
               required
               trim
               :no-wheel="false"
@@ -57,93 +64,101 @@
 export default {
   name: "ModalMessage",
   props: ["msgDet", "show", "update"],
-  data: function () {
+  data: function() {
     return {
-      tmpModalData: { disable: false, windowsOpen: true },
-      showButton: false,
-      showModalMessageDetail: false,
+      saveMsgDet: {},
+      showModal: false,
       updateMsg: false,
       title: "",
       state: {
         message: true,
         date: true,
       },
+      firstTime: true,
     };
   },
   computed: {
-    intervalStateInvalidFeedback() {
-      console.log("Call intervalStateInvalidFeedback");
-      return "Dato immesso non valido";
+    anyChange() {
+      if (this.saveMsgDet.message) {
+        let f = this.msgDet.message != this.saveMsgDet.message;
+        if (!f) {
+          let f1 = parseInt(this.saveMsgDet.date.getTime() / 100000);
+          let f2 = parseInt(this.msgDet.time / 100000);
+          console.log(f1 + " = " + f2);
+        }
+        console.log("AnyChange : " + f);
+        return f;
+      }
+      return false;
     },
-    showModal() {
-      return this.show;
-    }
+    anyError() {
+      let f = !(this.state.message && this.state.date);
+      console.log("AnyError : " + f);
+      return f;
+    },
   },
-  beforeMount: function () {
-    console.log(">>>> beforeMount : Load configuration..");
-    this.resetConfiguration();
-  },
-  beforeUpdate: function () {
-    console.log(">>>> beforeUpdate Load configuration..");
+  beforeUpdate: function() {
+    console.log(">>>> beforeUpdate Load configuration.. : " + this.show);
     if (this.show != undefined) {
-      this.resetConfiguration();
-      this.showModalMessageDetail = this.show;
+      if (this.firstTime && this.show) {
+        this.resetConfiguration();
+        this.firstTime = false;
+      }
+      this.showModal = this.show;
     }
   },
   methods: {
+    checkFieldData() {
+      this._checkField("date");
+    },
     checkField(event) {
       this._checkField(event.target.id);
     },
     _checkField(type) {
       var ok = true;
       console.log("Call checkField : " + type);
-      for (var ix = 0; ix < this.tmpModalData.model.fields.length; ix++) {
-        let field = this.tmpModalData.model.fields[ix];
-        if (type === field.id) {
-          console.log("Check ID " + type);
-          if (field.type === "number") {
-            if (field.min && field.value < field.min) ok = false;
-            else if (field.max && field.value > field.max) ok = false;
-            field.state = ok;
-          } else {
-            //TODO check other state
-          }
-        }
+      if (type === "date") {
+        //
+        let t = this.saveMsgDet.date.getTime();
+        console.log("new Time " + t + " - old " + this.msgDet.time);
+      } else if (type === "message") {
+        //
+        this.state.message = this.saveMsgDet.message != "";
       }
-      this.tmpModalData.disable = !ok;
     },
     cancelConfiguration() {
-      if (this.showModalMessageDetail) {
-        this.showModalMessageDetail = false;
-        this.$emit("updateMessage", []);
+      if (this.showModal) {
+        this.showModal = false;
+        this.firstTime = true;
+        this.$emit("updateMessage", {});
       }
     },
     updateConfiguration() {
-      var fields = [];
+      var fields = {};
       if (this.updateMsg) {
-        // for (var ix = 0; ix < this.tmpModalData.model.fields.length; ix++) {
-        //   let field = this.tmpModalData.model.fields[ix];
-        //   if (field.value != this.model.fields[ix].value) fields.push(field);
-        // }
+        fields = {
+          message: this.saveMsgDet.message,
+          date: this.saveMsgDet.date,
+        };
       }
+      this.showModal = false;
+      this.firstTime = true;
       this.$emit("updateMessage", fields);
     },
     resetConfiguration() {
-      console.log("reset configuration : "+this.show);
-      if (this.show) {
-        // aggiorno ora prima di fare copia
-        let d = this.$moment(this.msgDet.time);
-        this.msgDet.dateDisplay = d.format("DD/MM/YYYY");
-        this.msgDet.date = d;
-        var modelOut = JSON.parse(JSON.stringify(this.msgDet));
-        this.updateMsg = this.update === undefined ? false : this.update;
-        this.title = this.updateMsg ? "Duplica " : " Dettaglio ";
-        this.title =
-          this.title +
-          (modelOut.type === "SMS" ? "Messaggio SMS" : "Notifica PUSH");
-        this.tmpModalData.model = modelOut;
-        //debugger;
-      }
+      console.log("reset configuration : " + this.show);
+      //      if (this.show) {
+      // aggiorno ora prima di fare copia
+      this.msgDet.date = new Date(this.msgDet.time);
+      var modelOut = JSON.parse(JSON.stringify(this.msgDet));
+      // imposto oggetto date
+      modelOut.date = this.msgDet.date;
+      modelOut.dateDisplay = this.$moment(modelOut.date).format("DD/MM/YYYY");
+      this.updateMsg = this.update === undefined ? false : this.update;
+      this.title = this.updateMsg ? "Duplica " : " Dettaglio ";
+      this.title = this.title + (modelOut.type === "SMS" ? "Messaggio SMS" : "Notifica PUSH");
+      this.saveMsgDet = modelOut;
+      //      }
     },
   },
 };
