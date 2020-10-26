@@ -143,6 +143,7 @@ import {
   GET_RULES,
   ANALIZE_MESSAGES,
   GET_NOTIFICATIONMESSAGE,
+  ADD_MESSAGE,
   getServiceInfo,
 } from "@/services/restServices";
 import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
@@ -197,15 +198,53 @@ export default {
   },
   methods: {
     duplicateMessage() {
-      //debugger;
       let msg = this.sampleMessagesSelected[0];
       msg.fullMessage.update = true;
       this.msgDet = msg.fullMessage;
       this.showModalMessageDetail = true;
     },
     updateMessage(message) {
-      //debugger;
       this.showModalMessageDetail = false;
+      if (message.date != undefined) {
+        showConfirmationMessage(this, "Confermi l'inserimento di un nuovo messaggio ?", this.insertNewMessage, message);
+      }
+    },
+    insertNewMessage(message) {
+      const httpService = new HttpManager();
+      let info = getServiceInfo(ADD_MESSAGE);
+      info.request = {
+        type: this.msgDet.type,
+        sender: this.msgDet.sender,
+        message: message.message,
+        packageName: this.msgDet.packageName,
+        time: message.date.getTime(),
+      };
+      httpService
+        .callNodeServer(info)
+        .then((response) => {
+          var data = response.data;
+          let esito = data.error;
+          if (esito.code === 0) {
+            let dati = data.data;
+            if (dati.accepted) {
+              showMsgEsitoEsecuzione(
+                this,
+                "Messaggio aggiunto con successo, emesso da " +
+                  dati.bankId +
+                  " di importo " +
+                  dati.importo +
+                  " € accettato da MyBank!"
+              );
+            } else showMsgEsitoEsecuzione(this, "Messaggio è stato aggiunto ma non accettato", true);
+          } else {
+            showMsgErroreEsecuzione(this);
+          }
+        })
+        .catch((error) => {
+          showMsgErroreEsecuzione(this, error);
+        });
+
+      console.log("message : " + message.message);
     },
     updateRules() {
       this.reloadAndClear();

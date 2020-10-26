@@ -182,7 +182,6 @@ export default {
       this.showModalMessageDetail = false;
     },
     sortCompareDate(aRow, bRow, key) {
-      //console.log("Sort Compare for key " + key + " DESC " + sortDesc);
       if (key === "date") {
         return aRow.messageTime - bRow.messageTime;
       }
@@ -291,18 +290,26 @@ export default {
               if (mvInfo != undefined) {
                 dType = mvInfo.description;
               }
-
               let entry = {
-                date: typeof d.data === "undefined" ? d.messageDate : d.data,
                 importo: d.importo,
                 esercente: d.esercente,
                 type: dType,
                 _id: d._id,
                 msgId: d.msgId,
-                messageTime: d.messageTime,
                 bankId: d.bankId,
                 category: "N/D",
               };
+              if (d.data === undefined) {
+                entry.date = d.messageDate;
+                entry.messageTime = d.messageTime;
+              } else {
+                entry.date = d.data;
+                // data in formato DD/MM/YYYY
+                var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+                let a = d.data.replace(pattern, "$3-$2-$1");
+                entry.messageTime = new Date(a).getTime();
+              }
+
               if (this.bankInfo[d.bankId] != undefined) entry.bankId = this.bankInfo[d.bankId].bankName;
               if (this.categories[d.categoria] != undefined) entry.category = this.categories[d.categoria].description;
               if (d.segnoMovimento != undefined && d.segnoMovimento === "AVERE") {
@@ -313,6 +320,12 @@ export default {
                 datiServersD.push(entry);
               }
             }
+            datiServersD.sort((uno, due) => {
+              return due.messageTime - uno.messageTime;
+            });
+            datiServersA.sort((uno, due) => {
+              return due.messageTime - uno.messageTime;
+            });
             this.itemsAllDare = datiServersD;
             this.itemsAllAvere = datiServersA;
           } else showMsgErroreEsecuzione(this);

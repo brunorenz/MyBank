@@ -1,12 +1,13 @@
 const { default: store } = require("../store");
 
-let showMsgEsitoEsecuzione = function(obj, message) {
+let showMsgEsitoEsecuzione = function(obj, message, warning) {
   let options = {
     title: "Esito Esecuzione Servizio",
     okVariant: "success",
     footerClass: "p-2 border-top-0",
     centered: true,
   };
+  if (warning != undefined && warning) options.okVariant = "warning";
   obj.$bvModal
     .msgBoxOk(message, options)
     .then((value) => {})

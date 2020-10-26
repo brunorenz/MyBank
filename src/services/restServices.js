@@ -18,6 +18,7 @@ export const TEST_RULE = "testMessageRule";
 export const GET_ESERCENTICATEGORIE = "getMerchantsCategory";
 export const APPLY_RULE = "analizeAllMessagesOfARule";
 export const READ_MESSAGE = "readMessageDetail";
+export const ADD_MESSAGE = "addMessage";
 
 const METHOD = { POST: 1, GET: 2 };
 import { getConfiguration } from "@/services/config";
@@ -66,6 +67,7 @@ const serviceConfiguration = {
   updateCategory: () => serviceDefinition(UPDATE_CATEGORY, METHOD.POST),
   analizeAllMessagesOfARule: () => serviceDefinition(APPLY_RULE, METHOD.POST),
   readMessageDetail: () => serviceDefinition(READ_MESSAGE, METHOD.GET),
+  addMessage: () => serviceDefinition(ADD_MESSAGE, METHOD.POST),
   login,
 };
 
