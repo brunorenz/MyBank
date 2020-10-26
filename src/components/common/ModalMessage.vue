@@ -9,7 +9,7 @@
       @ok="updateConfiguration"
       @hide="cancelConfiguration"
       :ok-only="updateMsg === false"
-      :ok-disabled="!anyChange || anyError"
+      :ok-disabled="(!anyChange || anyError) && updateMsg"
     >
       <div>
         <b-row>
@@ -85,6 +85,7 @@ export default {
           let f1 = parseInt(this.saveMsgDet.date.getTime() / 100000);
           let f2 = parseInt(this.msgDet.time / 100000);
           console.log(f1 + " = " + f2);
+          f = f1 != f2;
         }
         console.log("AnyChange : " + f);
         return f;
@@ -149,7 +150,13 @@ export default {
       console.log("reset configuration : " + this.show);
       //      if (this.show) {
       // aggiorno ora prima di fare copia
-      this.msgDet.date = new Date(this.msgDet.time);
+      let d = new Date(this.msgDet.time);
+      d.setMilliseconds(0);
+      d.setSeconds(0);
+      d.setMinutes(0);
+      d.setHours(0);
+      this.msgDet.date = new Date(parseInt(d.getTime()));
+      this.msgDet.time = d;
       var modelOut = JSON.parse(JSON.stringify(this.msgDet));
       // imposto oggetto date
       modelOut.date = this.msgDet.date;
