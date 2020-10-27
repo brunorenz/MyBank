@@ -11,7 +11,10 @@
           </div>
         </b-form-group>
       </b-row>
-      <b-button variant="primary" @click="searchMovements" :disabled="dateRange === null">Aggiorna</b-button>
+      <b-button variant="primary" @click="readMessageDetail">Aggiungi Movimento</b-button>
+      <b-button class="ml-2" variant="primary" @click="searchMovements" :disabled="dateRange === null"
+        >Aggiorna</b-button
+      >
     </b-card>
     <b-card header="Movimenti Registrati">
       <div v-if="itemsAllDare.length > 0">
@@ -112,12 +115,28 @@
             </div>
           </b-col>
         </b-row>
-        <b-button variant="primary" @click="readMessageDetail" :disabled="selectedMessage.length === 0"
-          >Dettaglio</b-button
+        <b-button variant="primary" @click="readMovementDetail(false)" :disabled="selectedMessage.length === 0"
+          >Dettaglio Movimento</b-button
+        >
+        <b-button class="ml-2" variant="primary" @click="readMessageDetail" :disabled="selectedMessage.length === 0"
+          >Dettaglio Messaggio</b-button
+        >
+        <b-button
+          class="ml-2"
+          variant="primary"
+          @click="readMovementDetail(true)"
+          :disabled="selectedMessage.length != 1 || selectedMessage[0].updateBankId === false"
+          >Aggiorna Conto</b-button
         >
       </b-card-text>
     </b-card>
     <ModalMessage :msgDet="msgDet" :show="showModalMessageDetail" v-on:updateMessage="updateMessage"></ModalMessage>
+    <ModalMovement
+      :msgDet="movement"
+      :show="showModalMovementDetail"
+      v-on:updateMessage="updateMovement"
+      :update="updateBankId"
+    ></ModalMovement>
   </div>
 </template>
 
@@ -130,9 +149,11 @@ import "vue2-datepicker/locale/it";
 import { showMsgEsitoEsecuzione, showMsgErroreEsecuzione, showConfirmationMessage } from "@/services/utilities";
 import getMyBankConfiguration from "@/services/MyBankConfiguration";
 import ModalMessage from "@/components/common/ModalMessage";
+import ModalMovement from "@/components/common/ModalMovement";
+
 export default {
   name: "GestioneMovimenti",
-  components: { DatePicker, ModalMessage },
+  components: { DatePicker, ModalMessage, ModalMovement },
   data: function() {
     return {
       selectedMessage: [],
@@ -150,7 +171,10 @@ export default {
       categories: {},
       movementType: {},
       showModalMessageDetail: false,
-      msgDet: { title: "" },
+      showModalMovementDetail: false,
+      updateBankId: 0,
+      movement: {},
+      msgDet: {},
     };
   },
   mounted: function() {
@@ -181,6 +205,9 @@ export default {
     updateMessage(message) {
       this.showModalMessageDetail = false;
     },
+    updateMovement(movement) {
+      this.showModalMovementDetail = false;
+    },
     sortCompareDate(aRow, bRow, key) {
       if (key === "date") {
         return aRow.messageTime - bRow.messageTime;
@@ -205,6 +232,16 @@ export default {
       this.categories = cfg.categories;
       this.bankInfo = cfg.accounts;
       this.movementType = cfg.movementType;
+    },
+    readMovementDetail(update) {
+      this.updateBankId = update ? 1 : 0;
+      this.movement = this.selectedMessage[0];
+      this.showModalMovementDetail = true;
+    },
+    addMovementDetail(update) {
+      this.updateBankId = 2;
+      this.movement = {};
+      this.showModalMovementDetail = true;
     },
     readMessageDetail() {
       const httpService = new HttpManager();
@@ -309,8 +346,11 @@ export default {
                 let a = d.data.replace(pattern, "$3-$2-$1");
                 entry.messageTime = new Date(a).getTime();
               }
-
-              if (this.bankInfo[d.bankId] != undefined) entry.bankId = this.bankInfo[d.bankId].bankName;
+              entry.updateBankId = false;
+              if (this.bankInfo[d.bankId] != undefined) {
+                entry.bankId = this.bankInfo[d.bankId].bankName;
+                entry.updateBankId = this.bankInfo[d.bankId].accountByMessage;
+              }
               if (this.categories[d.categoria] != undefined) entry.category = this.categories[d.categoria].description;
               if (d.segnoMovimento != undefined && d.segnoMovimento === "AVERE") {
                 if (typeof d.importo === "number") totaleA += d.importo;
