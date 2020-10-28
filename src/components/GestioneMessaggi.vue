@@ -204,11 +204,9 @@ export default {
       this.showModalMessageDetail = true;
     },
     updateMessage(message) {
-      //debugger;
-      if (message.message)
-      {
-        console.log("New message : "+message.message);
-        console.log("New date    : "+message.date);
+      if (message.message) {
+        console.log("New message : " + message.message);
+        console.log("New date    : " + message.date);
       }
       this.showModalMessageDetail = false;
       if (message.date != undefined) {

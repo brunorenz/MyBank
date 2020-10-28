@@ -2,21 +2,23 @@
   <div class="app">
     <b-card header="Filtro Ricerca">
       <b-row>
-        <b-form-group label="Solo movimenti validi" class="col-sm-3">
-          <b-form-checkbox id="msgAccepted" v-model="msgAccepted"></b-form-checkbox>
+        <b-form-group label="Mostra messaggi non accettati" class="col-sm-3">
+          <b-form-checkbox id="showMsgNotAccepted" v-model="showMsgNotAccepted" @input="filterChange"></b-form-checkbox>
         </b-form-group>
-        <b-form-group label="Intervallo date" id="fieldDateRange" class="col-sm-3">
+        <b-form-group label="Intervallo date" id="fieldDateRange" class="col-sm-4">
           <div>
-            <date-picker v-model="dateRange" type="month" range></date-picker>
+            <date-picker v-model="dateRange" type="month" range @input="filterChange"></date-picker>
           </div>
         </b-form-group>
       </b-row>
-      <b-button variant="primary" @click="readMessageDetail">Aggiungi Movimento</b-button>
+      <b-button variant="primary" @click="addMovementDetail" :disabled="showMsgNotAccepted"
+        >Aggiungi Movimento</b-button
+      >
       <b-button class="ml-2" variant="primary" @click="searchMovements" :disabled="dateRange === null"
         >Aggiorna</b-button
       >
     </b-card>
-    <b-card header="Movimenti Registrati">
+    <b-card :header="movementTitle">
       <div v-if="itemsAllDare.length > 0">
         <div class="text-center"><h5>Movimenti in Dare</h5></div>
 
@@ -115,6 +117,7 @@
             </div>
           </b-col>
         </b-row>
+
         <b-button variant="primary" @click="readMovementDetail(false)" :disabled="selectedMessage.length === 0"
           >Dettaglio Movimento</b-button
         >
@@ -134,8 +137,9 @@
     <ModalMovement
       :msgDet="movement"
       :show="showModalMovementDetail"
+      :action="movementAction"
+      :configuration="config"
       v-on:updateMessage="updateMovement"
-      :update="updateBankId"
     ></ModalMovement>
   </div>
 </template>
@@ -162,17 +166,20 @@ export default {
       itemsAllAvere: [],
       visibleMessage: false,
       dateRange: null,
-      msgAccepted: true,
+      showMsgNotAccepted: false,
+      movementTitle: "",
       totale: 0,
       totaleDare: 0,
       totaleAvere: 0,
       isAccountMovementsBusy: false,
-      bankInfo: {},
-      categories: {},
-      movementType: {},
+      config: {
+        bankInfo: {},
+        categories: {},
+        movementType: {},
+      },
       showModalMessageDetail: false,
       showModalMovementDetail: false,
-      updateBankId: 0,
+      movementAction: 0,
       movement: {},
       msgDet: {},
     };
@@ -184,24 +191,34 @@ export default {
     now1.setDate(1);
     now1.setDate(1);
     this.dateRange = [now1, now2];
+    this.searchMovements();
   },
   methods: {
-    checkRange() {
-      return this.dateRange === null;
+    filterChange() {
+      this.searchMovements();
     },
-    getRow(row) {
-      console.log("ROW = " + row);
-      return row;
+    getDateFromStringIt(inDate) {
+      var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+      let a = inDate.replace(pattern, "$3-$2-$1");
+      return new Date(a);
     },
+
+    // checkRange() {
+    //   return this.dateRange === null;
+    // },
+    // getRow(row) {
+    //   console.log("ROW = " + row);
+    //   return row;
+    // },
     onRowSelected(items) {
       this.selectedMessage = items;
     },
-    selectAllMessages() {
-      this.$refs.accountMovements.selectAllRows();
-    },
-    deselectAllMessages() {
-      this.$refs.accountMovements.clearSelected();
-    },
+    // selectAllMessages() {
+    //   this.$refs.accountMovements.selectAllRows();
+    // },
+    // deselectAllMessages() {
+    //   this.$refs.accountMovements.clearSelected();
+    // },
     updateMessage(message) {
       this.showModalMessageDetail = false;
     },
@@ -229,24 +246,32 @@ export default {
     },
     async getMyBankConfiguration() {
       let cfg = await getMyBankConfiguration();
-      this.categories = cfg.categories;
-      this.bankInfo = cfg.accounts;
-      this.movementType = cfg.movementType;
+      this.config = {
+        categories: cfg.categories,
+        bankInfo: cfg.accounts,
+        movementType: cfg.movementType,
+      };
     },
     readMovementDetail(update) {
-      this.updateBankId = update ? 1 : 0;
-      this.movement = this.selectedMessage[0];
+      this.movementAction = update ? 1 : 0;
+      this.movement = this.selectedMessage[0].fullMovement;
       this.showModalMovementDetail = true;
     },
     addMovementDetail(update) {
-      this.updateBankId = 2;
-      this.movement = {};
+      this.movementAction = 2;
+      this.movement = {
+        accepted: true,
+        type: "MANUAL",
+        messageDate: "28/10/2020",
+        messageTime: 1603839600000,
+        importo: 0,
+      };
       this.showModalMovementDetail = true;
     },
     readMessageDetail() {
       const httpService = new HttpManager();
       let info = getServiceInfo(READ_MESSAGE);
-      info.query.msgId = this.selectedMessage[0].msgId;
+      info.query.msgId = this.selectedMessage[0].fullMovement.msgId;
       httpService
         .callNodeServer(info)
         .then((response) => {
@@ -267,7 +292,7 @@ export default {
       let input = {
         dateTo: this.$moment(this.dateRange[1]).format("DD/MM/YYYY"),
         dateFrom: this.$moment(this.dateRange[0]).format("DD/MM/YYYY"),
-        accepted: this.msgAccepted,
+        accepted: !this.showMsgNotAccepted,
       };
       this.fieldsAll.push(
         {
@@ -311,6 +336,8 @@ export default {
       const httpService = new HttpManager();
       let info = getServiceInfo(LIST_MOVEMENTS);
       info.request = input;
+      this.movementTitle = "Movimenti Registrati";
+      if (!input.accepted) this.movementTitle += " non accettati";
       httpService
         .callNodeServer(info)
         .then((response) => {
@@ -323,7 +350,7 @@ export default {
             for (var i = 0; i < dati.length; i++) {
               let d = dati[i];
               let dType = "N/D";
-              let mvInfo = this.movementType[d.tipoMovimento];
+              let mvInfo = this.config.movementType[d.tipoMovimento];
               if (mvInfo != undefined) {
                 dType = mvInfo.description;
               }
@@ -331,10 +358,9 @@ export default {
                 importo: d.importo,
                 esercente: d.esercente,
                 type: dType,
-                _id: d._id,
-                msgId: d.msgId,
                 bankId: d.bankId,
                 category: "N/D",
+                fullMovement: d,
               };
               if (d.data === undefined) {
                 entry.date = d.messageDate;
@@ -342,16 +368,17 @@ export default {
               } else {
                 entry.date = d.data;
                 // data in formato DD/MM/YYYY
-                var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
-                let a = d.data.replace(pattern, "$3-$2-$1");
-                entry.messageTime = new Date(a).getTime();
+                //var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+                //let a = d.data.replace(pattern, "$3-$2-$1");
+                entry.messageTime = this.getDateFromStringIt(d.data);
               }
               entry.updateBankId = false;
-              if (this.bankInfo[d.bankId] != undefined) {
-                entry.bankId = this.bankInfo[d.bankId].bankName;
-                entry.updateBankId = this.bankInfo[d.bankId].accountByMessage;
+              if (this.config.bankInfo[d.bankId] != undefined) {
+                entry.bankId = this.config.bankInfo[d.bankId].bankName;
+                entry.updateBankId = this.config.bankInfo[d.bankId].accountByMessage;
               }
-              if (this.categories[d.categoria] != undefined) entry.category = this.categories[d.categoria].description;
+              if (this.config.categories[d.categoria] != undefined)
+                entry.category = this.config.categories[d.categoria].description;
               if (d.segnoMovimento != undefined && d.segnoMovimento === "AVERE") {
                 if (typeof d.importo === "number") totaleA += d.importo;
                 datiServersA.push(entry);

@@ -9,20 +9,16 @@
       @ok="updateConfiguration"
       @hide="cancelConfiguration"
       :ok-only="updateMsg === false"
-      :ok-disabled="(!anyChange || anyError) && updateMsg"
+      :ok-disabled="(!anyChange || anyError) && action > 0"
     >
       <div>
         <b-row>
-          <b-col class="font-weight-bold col-sm-4">Tipo Messaggio </b-col>
+          <b-col class="font-weight-bold col-sm-4">Tipo Origine Messaggio </b-col>
           <b-col>{{ saveMsgDet.type }} </b-col>
         </b-row>
         <b-row class="mt-2">
           <b-col class="font-weight-bold col-sm-4">Mittente</b-col>
           <b-col>{{ saveMsgDet.sender }} </b-col>
-        </b-row>
-        <b-row class="mt-2" v-if="saveMsgDet.type == 'PUSH'">
-          <b-col class="font-weight-bold col-sm-4">Nome Pacchetto </b-col>
-          <b-col>{{ saveMsgDet.packageName }} </b-col>
         </b-row>
         <b-row class="mt-2">
           <b-col class="font-weight-bold col-sm-4">Data Invio </b-col>
@@ -63,7 +59,7 @@
 <script>
 export default {
   name: "ModalMovement",
-  props: ["msgDet", "show", "update"],
+  props: ["msgDet", "show", "action", "configuration"],
   data: function() {
     return {
       saveMsgDet: {},
@@ -79,21 +75,16 @@ export default {
   },
   computed: {
     anyChange() {
-      if (this.saveMsgDet.message) {
-        let f = this.msgDet.message != this.saveMsgDet.message;
-        if (!f) {
-          let f1 = parseInt(this.saveMsgDet.date.getTime() / 100000);
-          let f2 = parseInt(this.msgDet.time / 100000);
-          console.log(f1 + " = " + f2);
-          f = f1 != f2;
-        }
-        console.log("AnyChange : " + f);
+      if (this.action === 1) {
+        let f = this.msgDet.bankId != this.saveMsgDet.bankId;
         return f;
+      } else if (this.action === 2) {
+        return true;
       }
       return false;
     },
     anyError() {
-      let f = !(this.state.message && this.state.date);
+      let f = !(this.state.bankId && this.state.date);
       console.log("AnyError : " + f);
       return f;
     },
@@ -135,35 +126,29 @@ export default {
       }
     },
     updateConfiguration() {
-      var fields = {};
-      if (this.updateMsg) {
-        fields = {
-          message: this.saveMsgDet.message,
-          date: this.saveMsgDet.date,
-        };
-      }
       this.showModal = false;
       this.firstTime = true;
-      this.$emit("updateMessage", fields);
+      this.$emit("updateMessage", this.saveMsgDet);
     },
+    getDateFromStringIt(inDate) {
+      var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+      let a = inDate.replace(pattern, "$3-$2-$1");
+      return new Date(a);
+    },
+
     resetConfiguration() {
+      // action 0 -read , 1 - update , 2 - insert
+      debugger;
       console.log("reset configuration : " + this.show);
-      //      if (this.show) {
-      // aggiorno ora prima di fare copia
-      let d = new Date(this.msgDet.time);
-      d.setMilliseconds(0);
-      d.setSeconds(0);
-      d.setMinutes(0);
-      d.setHours(0);
-      this.msgDet.date = new Date(parseInt(d.getTime()));
-      this.msgDet.time = d;
-      var modelOut = JSON.parse(JSON.stringify(this.msgDet));
-      // imposto oggetto date
-      modelOut.date = this.msgDet.date;
-      modelOut.dateDisplay = this.$moment(modelOut.date).format("DD/MM/YYYY");
-      this.updateMsg = this.update === undefined ? false : this.update;
-      this.title = this.updateMsg ? "Aggiorna movimento" : "Dettaglio Movimento";
-      this.saveMsgDet = modelOut;
+      this.updateMsg = this.action != 0; // === 0 ? false : this.update;
+      this.saveMsgDet = JSON.parse(JSON.stringify(this.msgDet));
+      this.title = "Dettaglio Movimento";
+      if (this.action === 1) {
+        this.title = "Aggiorna Banca";
+      } else if (this.action === 2) {
+        this.title = "Inserisci Movimento";
+      }
+
       //      }
     },
   },

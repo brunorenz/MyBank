@@ -79,3 +79,18 @@ $input-group-addon-bg: $gray-100 !default;
 $input-border-color: $gray-200 !default;
 $input-group-addon-border-color: $gray-200 !default;
 */
+
+// This variable affects the `.h-*` and `.w-*` classes.
+$sizes: () !default;
+// stylelint-disable-next-line scss/dollar-variable-default
+$sizes: map-merge(
+  (
+    10: 10%,
+    25: 25%,
+    50: 50%,
+    75: 75%,
+    100: 100%,
+    auto: auto,
+  ),
+  $sizes
+);
