@@ -1,6 +1,7 @@
 <template>
   <div class="animated fadeIn">
     <b-modal
+      size="lg"
       v-model="showModal"
       id="modalMessageDetail"
       :title="title"
@@ -11,22 +12,25 @@
       :ok-only="updateMsg === false"
       :ok-disabled="(!anyChange || anyError) && action > 0"
     >
-      <div>
+      <div v-if="showData">
         <b-row>
           <b-col class="font-weight-bold col-sm-4">Tipo Origine Messaggio </b-col>
           <b-col>{{ saveMsgDet.type }} </b-col>
         </b-row>
         <b-row class="mt-2">
-          <b-col class="font-weight-bold col-sm-4">Mittente</b-col>
-          <b-col>{{ saveMsgDet.sender }} </b-col>
+          <b-col class="font-weight-bold col-sm-4">Conto</b-col>
+          <b-col v-if="action === 0">{{ bankDescription(saveMsgDet.bankId) }} </b-col>
+          <b-col v-else>
+            <b-form-select v-model="saveMsgDet.bankId" :options="accountOptions" @change="checkField"></b-form-select>
+          </b-col>
         </b-row>
         <b-row class="mt-2">
-          <b-col class="font-weight-bold col-sm-4">Data Invio </b-col>
-          <b-col v-if="updateMsg === false">{{ saveMsgDet.dateDisplay }} </b-col>
+          <b-col class="font-weight-bold col-sm-4">Data Operazione </b-col>
+          <b-col v-if="action != 2">{{ saveMsgDet.data }} </b-col>
           <b-col v-else>
             <b-form-datepicker
               id="date"
-              v-model="saveMsgDet.date"
+              v-model="saveMsgDet.data"
               :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
               required
               value-as-date
@@ -36,21 +40,33 @@
           </b-col>
         </b-row>
         <b-row class="mt-2">
-          <b-col class="font-weight-bold col-sm-4">Messaggio </b-col>
-          <b-col v-if="updateMsg === false">{{ saveMsgDet.message }} </b-col>
+          <b-col class="font-weight-bold col-sm-4">Importo</b-col>
+          <b-col class="col-sm-4" v-if="action === 0">{{ saveMsgDet.importo }}€ </b-col>
           <b-col v-else>
-            <b-form-textarea
-              id="message"
-              v-model="saveMsgDet.message"
-              required
-              trim
-              :no-wheel="false"
-              :state="state.message"
-              rows="4"
-              max-rows="4"
-              @input.native="checkField"
-            ></b-form-textarea>
+            <b-form-input v-model="saveMsgDet.importo" @change="checkField"></b-form-input>
           </b-col>
+        </b-row>
+        <b-row v-if="action != 2" class="mt-2">
+          <b-col class="font-weight-bold col-sm-4">Esercente</b-col>
+          <b-col v-if="action === 0">{{ saveMsgDet.esercente }} </b-col>
+        </b-row>
+        <b-row class="mt-2">
+          <b-col class="font-weight-bold col-sm-4">Categoria</b-col>
+          <b-col v-if="action === 0">{{ bankDescription(saveMsgDet.bankId) }} </b-col>
+          <b-col v-else>
+            <b-form-select v-model="saveMsgDet.bankId" :options="accountOptions" @change="checkField"></b-form-select>
+          </b-col>
+        </b-row>
+        <b-row class="mt-2">
+          <b-col class="font-weight-bold col-sm-4">Natura</b-col>
+          <b-col v-if="action === 0">{{ bankDescription(saveMsgDet.bankId) }} </b-col>
+          <b-col v-else>
+            <b-form-select v-model="saveMsgDet.bankId" :options="accountOptions" @change="checkField"></b-form-select>
+          </b-col>
+        </b-row>
+        <b-row v-if="action != 2" class="mt-2">
+          <b-col class="font-weight-bold col-sm-4">Messaggio originate</b-col>
+          <b-col>{{ saveMsgDet.message }} </b-col>
         </b-row>
       </div>
     </b-modal>
@@ -71,9 +87,15 @@ export default {
         date: true,
       },
       firstTime: true,
+      accountOptions: [],
+      showData: false,
     };
   },
   computed: {
+    bankDescription() {
+      return (bankId) =>
+        this.configuration.bankInfo[bankId].bankName + " - " + this.configuration.bankInfo[bankId].description;
+    },
     anyChange() {
       if (this.action === 1) {
         let f = this.msgDet.bankId != this.saveMsgDet.bankId;
@@ -138,7 +160,21 @@ export default {
 
     resetConfiguration() {
       // action 0 -read , 1 - update , 2 - insert
-      debugger;
+
+      let a = [];
+      let d = this.configuration;
+      let key = Object.keys(d.bankInfo);
+      for (let ix = 0; ix < key.length; ix++) {
+        a.push({
+          value: key[ix],
+          text1: d.bankInfo[key[ix]].bankName + " - " + d.bankInfo[key[ix]].description,
+          text: this.bankDescription(key[ix]),
+        });
+      }
+
+      this.accountOptions = a;
+
+      //debugger;
       console.log("reset configuration : " + this.show);
       this.updateMsg = this.action != 0; // === 0 ? false : this.update;
       this.saveMsgDet = JSON.parse(JSON.stringify(this.msgDet));
@@ -147,7 +183,10 @@ export default {
         this.title = "Aggiorna Banca";
       } else if (this.action === 2) {
         this.title = "Inserisci Movimento";
+        this.saveMsgDet.date = new Date();
       }
+      if (this.msgDet.data === undefined) this.msgDet.data = this.msgDet.messageDate;
+      this.showData = true;
 
       //      }
     },

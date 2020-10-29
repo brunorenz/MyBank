@@ -308,6 +308,11 @@ export default {
           sortable: true,
         },
         {
+          key: "account",
+          label: "Conto",
+          sortable: true,
+        },
+        {
           key: "importo",
           label: "Importo",
           formatter: (value) => {
@@ -361,6 +366,7 @@ export default {
                 bankId: d.bankId,
                 category: "N/D",
                 fullMovement: d,
+                account: "",
               };
               if (d.data === undefined) {
                 entry.date = d.messageDate;
@@ -375,6 +381,7 @@ export default {
               entry.updateBankId = false;
               if (this.config.bankInfo[d.bankId] != undefined) {
                 entry.bankId = this.config.bankInfo[d.bankId].bankName;
+                entry.account = this.config.bankInfo[d.bankId].description;
                 entry.updateBankId = this.config.bankInfo[d.bankId].accountByMessage;
               }
               if (this.config.categories[d.categoria] != undefined)
