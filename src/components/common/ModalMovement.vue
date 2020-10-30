@@ -52,16 +52,16 @@
         </b-row>
         <b-row class="mt-2">
           <b-col class="font-weight-bold col-sm-4">Categoria</b-col>
-          <b-col v-if="action === 0">{{ bankDescription(saveMsgDet.bankId) }} </b-col>
+          <b-col v-if="action === 0">{{ configuration.categories[saveMsgDet.categoria] ? configuration.categories[saveMsgDet.categoria].description : "N/D"}} </b-col>
           <b-col v-else>
-            <b-form-select v-model="saveMsgDet.bankId" :options="accountOptions" @change="checkField"></b-form-select>
+            <b-form-select v-model="saveMsgDet.categoria" :options="categoriesOptions" @change="checkField"></b-form-select>
           </b-col>
         </b-row>
         <b-row class="mt-2">
           <b-col class="font-weight-bold col-sm-4">Natura</b-col>
-          <b-col v-if="action === 0">{{ bankDescription(saveMsgDet.bankId) }} </b-col>
+          <b-col v-if="action === 0">{{ configuration.movementType[saveMsgDet.tipoMovimento].description }} </b-col>
           <b-col v-else>
-            <b-form-select v-model="saveMsgDet.bankId" :options="accountOptions" @change="checkField"></b-form-select>
+            <b-form-select v-model="saveMsgDet.bankId" :options="movementTypeOptions" @change="checkField"></b-form-select>
           </b-col>
         </b-row>
         <b-row v-if="action != 2" class="mt-2">
@@ -88,6 +88,8 @@ export default {
       },
       firstTime: true,
       accountOptions: [],
+      categoriesOptions: [],
+      movementTypeOptions: [],
       showData: false,
     };
   },
@@ -171,9 +173,26 @@ export default {
           text: this.bankDescription(key[ix]),
         });
       }
-
       this.accountOptions = a;
-
+      a =[];
+      key = Object.keys(d.categories);
+      for (let ix = 0; ix < key.length; ix++) {
+        a.push({
+          value: key[ix],
+          text: d.categories[key[ix]].description,
+        });
+      }
+      this.categoriesOptions = a;
+      
+      a =[];
+      key = Object.keys(d.movementType);
+      for (let ix = 0; ix < key.length; ix++) {
+        a.push({
+          value: key[ix],
+          text: d.movementType[key[ix]].description,
+        });
+      }
+      this.movementTypeOptions = a;
       //debugger;
       console.log("reset configuration : " + this.show);
       this.updateMsg = this.action != 0; // === 0 ? false : this.update;
