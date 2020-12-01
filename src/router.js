@@ -16,11 +16,11 @@ const MainContainer = () => import("@/components/MainContainer");
 // Views
 //const About = () => import("@/views/About.vue");
 
-let route = function(path, componentName, guest) {
-  let c = () => import("@/components/" + componentName);
+let route = function(path, name, guest) {
+  let c = () => import("@/components/" + name);
   return {
     path,
-    componentName,
+    name,
     component: c,
     meta: {
       guest: guest === undefined ? false : guest,
