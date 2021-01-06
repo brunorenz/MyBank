@@ -14,7 +14,7 @@
     "vue-router": "^3.4.5",
     "vue-chartjs": "^3.5.1",
     "bootstrap-vue": "^2.17.3",
-    "axios": "^0.20.0",
+    "axios": "^0.21.1",
     "vuex": "^3.5.1",
     "@coreui/coreui": "2.1.16",
     "@coreui/vue": "2.1.2",
